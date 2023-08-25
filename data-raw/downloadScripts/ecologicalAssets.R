@@ -5,6 +5,7 @@
 library(rvest)
 library(dplyr)
 library(sf)
+library(readr)
 
 # Remove scientific notation
 options(scipen = 9999)
@@ -104,6 +105,54 @@ downloadCNRA("https://data.cnra.ca.gov/dataset/gspar",
 
 # Active website...Will need RSelenium...Can't get this to work on my state laptop
 # since my organization manages my browser.
+# For now, download the csv file at:
+# https://gis.data.ca.gov/datasets/CDFW::statewide-terrestrial-native-species-richness-summary-ace-ds1332/about
+
+area$nativeRichness <- read_csv(
+  file.path("data-raw", "csvFiles", "Statewide_Terrestrial_Native_Species_Richness_Summary_-_ACE_[ds1332].csv"), 
+  col_types = cols(
+    OBJECTID = col_double(),
+    Hex_ID = col_double(),
+    NtvRankEco = col_double(),
+    NtvSumEco = col_double(),
+    NtvRankSW = col_double(),
+    NtvSumSW = col_double(),
+    NativeCount = col_double(),
+    NtvAmph = col_double(),
+    NtvRept = col_double(),
+    NtvBird = col_double(),
+    NtvMamm = col_double(),
+    NtvPlnt = col_double(),
+    GameCount = col_double(),
+    ClimVulCount = col_double(),
+    Eco_Sect = col_character(),
+    Eco_Name = col_character(),
+    Jepson_Eco = col_character(),
+    County = col_character(),
+    Shape__Area = col_double(),
+    Shape__Length = col_double()
+  ),
+) %>% 
+  rename(
+    ecoRegionNativeRank = NtvRankEco,
+    ecoRegionNativeWeight = NtvSumEco,
+    stateNativeRank = NtvRankSW,
+    stateNativeWeight = NtvSumSW,
+    nativeCount = NativeCount,
+    nativeAmphibianCount = NtvAmph,
+    nativeReptailCount = NtvRept,
+    nativeBirdCount = NtvBird,
+    nativeMammalCount = NtvMamm,
+    nativePlantCount = NtvPlnt,
+    gameCount = GameCount,
+    climateVulnerableCount = ClimVulCount,
+    ecoRegionCode = Eco_Sect,
+    ecoRegionName = Eco_Name,
+    ecoRegionCodeJepson = Jepson_Eco,
+    county = County,
+    area = Shape__Area,
+    length = Shape__Length
+  )
 
 # Saving the RData file ---------------------------------------------------
 
