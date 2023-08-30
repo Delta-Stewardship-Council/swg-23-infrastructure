@@ -23,7 +23,7 @@ area <- list()
 # Conservation easements --------------------------------------------------
 
 downloadCNRA(url = "https://data.cnra.ca.gov/dataset/california-conservation-easement-database", 
-             fileLink = "https://data.cnra.ca.gov/dataset/31b65732-941d-4af0-9d8c-279fac441fd6/resource/94b36840-0540-445b-8caf-19657fcc5fda/download/cced_2023a.zip") %>% 
+             file = "California Conservation Easement Database 2023aSHP") %>% 
   unzipShapefile(outPath = file.path("data-raw", "shapefiles", "conservationEasements"))
 
 # Getting metadata from the files
@@ -38,8 +38,8 @@ area$conservationEasements <- shapefiles$conservationEasements %>%
 all(all.equal(area$conservationEasements$Shape_Area, area$conservationEasements$area))
 
 # Protected areas ---------------------------------------------------------
-downloadCNRA("https://data.cnra.ca.gov/dataset/california-protected-areas-database",
-             "https://data.cnra.ca.gov/dataset/0ae3cd9f-0612-4572-8862-9e9a1c41e659/resource/27323846-4000-42a2-85b3-93ae40edeff9/download/cpad_2023a.zip") %>% 
+downloadCNRA("https://data.cnra.ca.gov/dataset/california-protected-areas-database", 
+             file = "California Protected Areas Database 2023a releaseSHP") %>% 
   unzipShapefile(file.path("data-raw", "shapefiles", "protectedAreas"))
 
 shapefiles$protectedAreas <- st_read(file.path("data-raw", "shapefiles", "protectedAreas", "CPAD_2023a_Holdings.shp"))
@@ -51,7 +51,7 @@ area$protectedAreas <- shapefiles$protectedAreas %>%
 
 # i07 Habitat Delta 1977 --------------------------------------------------
 downloadCNRA("https://data.cnra.ca.gov/dataset/i07-habitat-delta-1977",
-             "https://gis.data.cnra.ca.gov/datasets/d790064980d04fad8fb55270b0aea3e3_0.zip?outSR=%7B%22latestWkid%22%3A3857%2C%22wkid%22%3A102100%7D",
+             "ShapefileZIP",
              method = "curl") %>% 
   unzipShapefile(file.path("data-raw", "shapefiles", "habitatDelta1977"))
 

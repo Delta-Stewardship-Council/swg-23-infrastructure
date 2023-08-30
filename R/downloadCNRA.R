@@ -15,14 +15,28 @@ showLinks <- function(url, selector = NULL) {
   page <- read_html(url)
   
   if (!is.null(selector)) {
-    page <- html_nodes(page, selector)
+    if (selector == "#dataset-resources")
+      page <- html_nodes(page, selector)
+    namesNodes <- html_nodes(page, ".heading")
+    
+    namesHeading <- html_text(namesNodes)
+    namesHeading <- regmatches(namesHeading, regexpr("(?<=\\n).*?(?=\\n)", namesHeading, perl = T))
+    namesHeading <- gsub("\\s{2,}", "", namesHeading)
+    
+    links <- html_nodes(page, "a")
+    
+    linkURLs <- html_attr(links, "href")
+    
+    data.frame(
+      item = namesHeading,
+      url = linkURLs[grepl("https", linkURLs)]
+    )
+  } else {
+    links <- html_nodes(page, "a")
+    
+    linkURLs <- html_attr(links, "href")
+    linkURLs
   }
-  
-  links <- html_nodes(page, "a")
-  
-  linkURLs <- html_attr(links, "href")
-  linkURLs
-  
 }
 
 #' Download files from the CNRA website
@@ -39,18 +53,23 @@ showLinks <- function(url, selector = NULL) {
 #' @export
 #'
 #' @examples
-downloadCNRA <- function(url, fileLink = NULL, path = tempdir(), ...) {
+downloadCNRA <- function(url, file = NULL, path = tempdir(), ...) {
   
   linkURLs <- showLinks(url, "#dataset-resources")
   
-  if (is.null(fileLink)) return(linkURLs)
-  
-  if (grepl("https://", fileLink)) {
-    fileName <- tempfile()
-    
-    download.file(fileLink, destfile = fileName, ...)
-    fileName
+  if (is.null(file)) {
+    message("Choose from one of the following `items`, specifying it in the `file` argument of this function: ")
+    return(linkURLs)
   }
+  
+  if (!grepl("https://", file)) {
+    file <- subset(linkURLs, item == file)[["url"]]
+  }
+  
+  fileName <- tempfile()
+  
+  download.file(file, destfile = fileName, ...)
+  fileName
 }
 
 #' Extracting a shape file from a zipped folder
@@ -68,6 +87,5 @@ unzipShapefile <- function(filePath, outPath) {
   fileNames <- unzip(filePath, list = T)[["Name"]]
   shapefileName <- fileNames[which(grepl("*.\\.shp$", fileNames))]
   unzip(filePath, exdir = outPath)
-  cat("The extracted shape file is:", shapefileName)
-  
+  cat("The extracted shape file(s) is/are:", shapefileName)
 }
