@@ -51,7 +51,7 @@ rsconnect/
 # Shape files
 data-raw/shapefiles/conservationEasements
 data-raw/shapefiles/protectedAreas
-data-raw/shapefiles/RevisedIslands_160912_AllIslands
+# data-raw/shapefiles/RevisedIslands_160912_AllIslands
 data-raw/shapefiles/subsidenceGDB
 
 # HTML files
