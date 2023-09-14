@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?><metadata>
+    <idinfo>
+        <citation>
+            <citeinfo>
+                <origin/>
+                <title>i07_Habitat_Delta_1977</title>
+                <onlink>https://gis.water.ca.gov/arcgis/rest/services/Environment/i07_Habitat_Delta_1977/FeatureServer</onlink>
+            </citeinfo>
+        </citation>
+        <descript>
+            <abstract>This dataset represents the 1977 Delta Habitat Types that were distributed in the 1979 Delta Environmental Atlas, produced by USACE. 1977 Delta Habitat Types were made digital by heads up digitizing registered scanned pages from 1979 Delta Environmental Atlas, produced by USACE. &amp;quot;The Habitat Types &amp;amp; Vegetation section delineates on 1 inch to 1000 foot scale aerial photographs the habitat types found in the Delta, described according to the classification system of the US Fish &amp;amp; Wildlife Service. Thirteen habitat types are defined in this Atlas. 
+The associated data are considered DWR enterprise GIS data, which meet all appropriate requirements of the DWR Spatial Data Standards, specifically the DWR Spatial Data Standard version 3.2, dated September 10, 2021. DWR makes no warranties or guarantees — either expressed or implied — as to the completeness, accuracy, or correctness of the data. DWR neither accepts nor assumes liability arising from or for any incorrect, incomplete, or misleading subject data. Comments, problems, improvements, updates, or suggestions should be forwarded to gis@water.ca.gov as available and appropriate.</abstract>
+            <purpose>This dataset represents the 1977 Delta Habitat Types that were distributed in the 1979 Delta Environmental Atlas, produced by USACE.</purpose>
+        </descript>
+        <keywords>
+            <theme>
+                <themekt>None</themekt>
+                <themekey>2019</themekey>
+                <themekey>1977</themekey>
+                <themekey>environment</themekey>
+                <themekey>Land Use</themekey>
+                <themekey>USACE</themekey>
+                <themekey>current</themekey>
+                <themekey>Sacramento</themekey>
+                <themekey>Habitat Types</themekey>
+                <themekey>Army Corps</themekey>
+                <themekey>Delta</themekey>
+                <themekey>San Joaquin</themekey>
+            </theme>
+        </keywords>
+        <accconst>Other Constraints</accconst>
+        <useconst>None</useconst>
+        <datacred>CA Department of Water Resources and USACE</datacred>
+    </idinfo>
+    <metainfo>
+        <metd>20220803</metd>
+        <metc>
+            <cntinfo>
+                <cntorgp>
+                    <cntorg>California Department of Water Resources</cntorg>
+                </cntorgp>
+            </cntinfo>
+        </metc>
+        <metstdn>FGDC Content Standard for Digital Geospatial Metadata</metstdn>
+        <metstdv>FGDC-STD-001-1998</metstdv>
+        <mettc>local time</mettc>
+    </metainfo>
+</metadata>

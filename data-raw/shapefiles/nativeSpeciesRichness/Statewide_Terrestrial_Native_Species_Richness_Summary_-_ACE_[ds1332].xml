@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?><metadata>
+    <idinfo>
+        <citation>
+            <citeinfo>
+                <title>BIOSMap</title>
+            </citeinfo>
+        </citation>
+        <descript>
+            <abstract>For more information, see the Native Species Richness Factsheet at https://nrm.dfg.ca.gov/FileHandler.ashx?DocumentID=150681. The user can view a list of species potentially present in each hexagon in the ACE Online Viewer https://map.dfg.ca.gov/ace/.The California Department of Fish and Wildlife''s (CDFW) Areas of Conservation Emphasis (ACE) is a compilation and analysis of the best-available statewide spatial information in California on biodiversity, rarity and endemism, harvested species, significant habitats, connectivity and wildlife movement, climate vulnerability, climate refugia, and other relevant data (e.g., other conservation priorities such as those identified in the State Wildlife Action Plan (SWAP), stressors, land ownership). ACE addresses both terrestrial and aquatic data. The ACE model combines and analyzes terrestrial information in a 2.5 square mile hexagon grid and aquatic information at the HUC12 watershed level across the state to produce a series of maps for use in non-regulatory evaluation of conservation priorities in California. The model addresses as many of CDFWs statewide conservation and recreational mandates as feasible using high quality data sources. High value areas statewide and in each USDA Ecoregion were identified. The ACE maps and data can be viewed in the ACE online map viewer, or downloaded for use in ArcGIS. For more detailed information see https://www.wildlife.ca.gov/Data/Analysis/ACE and https://nrm.dfg.ca.gov/FileHandler.ashx?DocumentID=24326.</abstract>
+            <purpose>Statewide Terrestrial Native Species Richness Summary, Areas of Conservation Emphasis (ACE), version 3.0.
+
+Native species richness is a measure of species biodiversity, and is one measurement used to describe the distribution of overall species biodiversity in California for the California Department of Fish and Wildlife (CDFW) Areas of Conservation Emphasis Project (ACE). Other measures of terrestrial species biodiversity included in the ACE terrestrial biodiversity summary are rare species richness and terrestrial endemism. Here, native species richness represents a count of the total number of native terrestrial species potentially present in each hexagon based on species range and distribution information. This dataset depicts the distribution of richness of all species in the state, both common and rare. The data can be used to view patterns of species diversity, and to identify areas of highest native richness across the state and in each ecoregion. Users can view a list of species that contribute to the richness counts for each hexagon.
+
+The native species richness summary depicts relative diversity within each ecoregion across the state, so that areas of highest diversity within each ecoregion are highlighted. To achieve this, the data in the summary layer was normalized by taxonomic group and by ecoregion (see Data Sources and Models Used, below). The native species richness by taxonomic group layers give a statewide overview of richness for each individual taxonomic group, showing counts of species per hexagon for amphibians, birds, mammals, and reptiles; and counts of species per Jepson ecoregion for plants. In addition to overall native species richness, separate counts of native game species and climate vulnerable species are available. </purpose>
+        </descript>
+        <keywords>
+            <theme>
+                <themekt>None</themekt>
+                <themekey>Auth_CDFW</themekey>
+                <themekey>California Department of Fish And Wildlife</themekey>
+                <themekey>California Natural Resources Agency</themekey>
+                <themekey>CAOpenData</themekey>
+                <themekey>terrestrial</themekey>
+                <themekey>biodiversity</themekey>
+                <themekey>native</themekey>
+                <themekey>richness</themekey>
+                <themekey>rare</themekey>
+                <themekey>rarity</themekey>
+                <themekey>endemic</themekey>
+                <themekey>sensitive haibtat</themekey>
+                <themekey>ACE</themekey>
+                <themekey>riparian</themekey>
+                <themekey>wetland</themekey>
+                <themekey>rare natural community</themekey>
+                <themekey>game</themekey>
+                <themekey>bird</themekey>
+                <themekey>reptile</themekey>
+                <themekey>amphibian</themekey>
+                <themekey>mammal</themekey>
+                <themekey>plant</themekey>
+                <themekey>statewide</themekey>
+                <themekey>DS1332_20180123_wm</themekey>
+            </theme>
+        </keywords>
+        <accconst>None</accconst>
+        <useconst>License: This work is licensed under Creative Commons Attribution 4.0 International License (https://creativecommons.org/licenses/by/4.0/). Using the citation standards recommended for BIOS datasets (https://www.wildlife.ca.gov/Data/BIOS/Citing-BIOS) satisfies the attribution requirements of this license.Disclaimer: The State makes no claims, promises, or guarantees about the accuracy, completeness, reliability, or adequacy of these data and expressly disclaims liability for errors and omissions in these data. No warranty of any kind, implied, expressed, or statutory, including but not limited to the warranties of non-infringement of third party rights, title, merchantability, fitness for a particular purpose, and freedom from computer virus, is given with respect to these data.</useconst>
+        <datacred>Melanie Gogol-Prokurat; California Department of Fish and Wildlife (CDFW); Biogeographic Data Branch; (916) 324-9265; ; Melanie.Gogol-Prokurat@wildlife.ca.gov; </datacred>
+    </idinfo>
+    <metainfo>
+        <metstdn>FGDC Content Standard for Digital Geospatial Metadata</metstdn>
+        <metstdv>FGDC-STD-001-1998</metstdv>
+        <mettc>local time</mettc>
+    </metainfo>
+</metadata>

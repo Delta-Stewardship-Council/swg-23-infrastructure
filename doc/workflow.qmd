@@ -1,0 +1,359 @@
+---
+title: "Spatial Data: Creating Polygons"
+author: "TXN"
+date: last-modified
+date-format: "MMMM DD, YYYY"
+format:
+  html:
+    code-fold: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(dpi=320, fig.width=15, fig.height=10, warning=FALSE, message=F, 
+                      dev = "CairoPNG",
+                      dev.args = list(pointsize = 13), echo = T)
+
+options(scipen = 99999)
+```
+
+## Purpose
+
+I attempted to recreate the DLIS RAND model Delta Island shape file using only R. 
+
+## Introduction
+
+Our project attempts to understand the costs and benefits of levees within the Delta. Therefore, the logical first step is to understand where the levees are and what land masses they protect. DWR provides a shape file of levee centerlines that we can use. However, for further analysis, e.g., calculating area of land protected by a set of levees, these centerlines need to be transformed into polygons. I wanted to learn how to do this transformation in R. 
+
+Using the RAND model shape file as a guide, I explored the `sf` package to try and programmatically  create polygons from the levee centerline shape files. The following is a synthesis of what I have learned and the current workflow that I employ. The examples provided are directly from the leveeFix.R file, in which there are many other examples of these approaches.
+
+## General workflow
+
+The `sf` package has nearly all the tools required to work with spatial data, and specifically, to create polygons from the DWR centerline dataset. Central to the package is the concept of an `sf` object, which is the output of many functions from the package. Ultimately, an `sf` object is simply a data frame with geometry data. Because of this, many classical wrangling operations using the `dplyr` package works really well for the `sf` package. Similarly, the `ggplot` package supports spatial plotting as well, allowing for an entire workflow to be developed based in the "tidyverse" universe.
+
+### Loading packages
+```{r}
+library(dplyr)      # Data wrangling
+library(ggplot2)    # Plotting
+library(sf)         # handling spatial data
+library(lwgeom)     # Additional features to work with spatial data
+library(patchwork)  # For orienting multiple figures on the same plot
+
+# Loading some custom functions
+source(file.path("..", "R", "createleveePolygons.R"))
+# Setting theme across all ggplot objects for rest of the document
+theme_set(theme_minimal(base_size = 24) + theme(legend.position = "bottom"))
+```
+
+### Reading in spatial data
+
+One common form of spatial data is a shapefile. These can be read directly into R via `st_read`:
+
+```{r, results='hide'}
+# link to your .shp file
+leveeCenterlines <- st_read(file.path("..", "data-raw", "shapefiles", "deltaLeveeAreas", "i17_Delta_Levees_Centerlines_2017.shp")) %>%
+  # Transform the data to the correct projection
+  st_transform(crs = 3310)
+```
+
+After reading in the data, we have to ensure that the data is projected correctly. To do this, we can use `st_transform`. For this specific effort, I am using crs = 3310 which represents the California Albers projection, an equal distance projection. This transformation to the correct projection is essential for correctly calculating the area of our polygons or lengths of our lines.
+
+```{r, results='hide'}
+# Do the same with the DLIS RAND model shape file
+DLISPolygons <- st_read(file.path("..", "data-raw", "shapefiles", "RevisedIslands_160912_AllIslands", "RevisedIslands_160912_AllIslands.shp")) %>% 
+  # Transform the data to the correct projection
+  st_transform(crs = 3310)
+```
+
+### Plotting the shapefiles
+
+```{r, fig.cap="Figure 1. The DWR Centerline dataset on the left and the DLIS Delta Island polgyons on the right. Notice that the centerline figure is not filled in because the geometries are lines and not polygons. The are also more areas in the DLIS shapefile."}
+{
+  leveeCenterlines %>%
+    ggplot() +
+    geom_sf()
+} * {
+  DLISPolygons %>%
+    ggplot() +
+    geom_sf()
+}
+```
+
+### Creating a polygon: general approach
+
+When we explore our levee dataset, we see that "LMA" represents the area name of the levees:
+
+```{r}
+head(leveeCenterlines)
+```
+
+We can therefore filter (`filter`) for each area of interest using the LMA labels. After that, the generalized workflow is to simply connect all the line geometries together (`st_union`) and turn it into a polgyon (`st_polygonize`):
+
+```{r, fig.cap="Figure 2. Polygonized area of Shermand Island. The island would not be filled if the object was not a true polygon."}
+shermanIsland <- leveeCenterlines %>% 
+  filter(LMA == "Sherman Island")
+# At this point, this should be a "MULTILINESTRING" class, as each levee is simply a line geometry
+
+# Now to turn these lines into a polygon
+shermanIsland <- shermanIsland %>% 
+  st_union() %>% 
+  st_polygonize()
+# This should be a "POLYGON" class
+
+# Plotting it:
+ggplot(shermanIsland) +
+  geom_sf(fill = "firebrick")
+# If this was not a polygon, there would be no fill
+```
+
+For most cases, the above workflow will work. The main requirement for it to work is to have lines that are touching one another. If there is any sort of break between the lines, the polygonize function will not work. For those cases, I have explored several fixes.
+
+### Fixing centerlines to polygonize
+
+There are different cases in which a polygon cannot be formed. The main issue in these cases is that the lines do not completely touch one another. The following will list various approaches that I have explored to deal with these cases. I think this is a fairly exhaustive list for the current project, i.e., nearly all instances can be solved by one or more of these approaches.
+
+#### `st_snap`
+
+Here, two segments are very close to touching but are not. We can use `st_snap` to draw a line in between those two points. This approach generally works when the two points are close to one another and the end points are separated by a space that can be filled with a simple straight line.
+
+```{r, fig.cap="Figure 3. A 10.4 m seperation between levee 287 and 289 of the New Hope Tract causes the polygonize function to fail."}
+newHopeTract <- leveeCenterlines %>% 
+  filter(LMA == "New Hope Tract") 
+
+# Do all lines touch one another?
+st_touches(newHopeTract)
+# Segment 2 and 4 only have 1 touch, while a working segment touches on both sides.
+
+# What are the segments that don't touch and how close are they?
+st_distance(newHopeTract)
+# This gives us a pair-wise matrix of the distances between all of our points.
+# We can see that segment 2 and 4 are 10.4 m apart. This is likely our culprit as 
+# every other combination are very far from one another
+
+# The OBJECTID column can be used to isolate just these two segments
+leveeCenterlines %>% 
+  filter(OBJECTID %in% c(287, 289)) %>% 
+  mutate(OBJECTID = factor(OBJECTID)) %>% 
+  ggplot() +
+    geom_sf(aes(color = OBJECTID))
+```
+
+We can snap the two lines together now that we have identify which levee segments (OBJECTID) are responsible. Note that the snapped object returned is the two centerline fused together; we need to account for this when binding back the rest of the levee objects, i.e., filter for all required levees other than these two.
+
+```{r, fig.cap="Figure 4. New Hope Tract after correcting for the small gap between the levees using 'st_snap'."}
+st_snap(
+  leveeCenterlines %>% 
+    filter(OBJECTID == 287),
+  leveeCenterlines %>% 
+    filter(OBJECTID == 289),
+  tolerance = 15
+) %>% 
+  bind_rows(
+    leveeCenterlines %>% 
+      filter(OBJECTID %in% c(10, 288, 290, 291))
+  ) %>% 
+  st_union() %>% 
+  st_polygonize() %>% 
+  ggplot() +
+  geom_sf(fill = "firebrick")
+```
+
+#### `st_linestring`
+
+Very often, the `st_snap` function will not work the way we expect. In these cases, we will have to draw the line between our end points manually. This can be done by: 1) identifying our segments of interest, 2) isolating their end points, 3) finding their coordinates on our plot, and 4) drawing the line. The line can then be added to our data frame to complete the polygon. Since this process involves many smaller steps that may be difficult to remember, I have simply created a `drawLine` helper function that allows you to do this with two segments easily. If you are interested in the actual coding, simply refer to the function by running it without the brackets, i.e., `drawLine` in the console.
+
+The function takes 4 main arguments: x = first geometry of interest, y = second geometry of interest, xPosition = which point of x to draw the line from, and yPosition = which point of y to draw the line from. You can supply the function without the positions and a pair of plots will be provided showing the position associated to each endpoint.
+
+```{r, fig.cap="Figure 5. The end points associated with levee 8 (left) and 209 (right). In this case, we want to draw a line between point position 2 for both segments as they are the ones next to one another."}
+drawLine(leveeCenterlines %>% 
+           filter(OBJECTID == 8),
+         leveeCenterlines %>% 
+           filter(OBJECTID == 209))
+```
+
+Once you supply the end point positions, simply add that segment to the rest of your segment for your polygon to complete the area.
+
+```{r, fig.cap="Figure 6. Glanville Tract once a line is drawn to connect the endpoints of levees 8 and 209."}
+drawLine(leveeCenterlines %>% 
+             filter(OBJECTID == 8),
+         leveeCenterlines %>% 
+             filter(OBJECTID == 209),
+         2, 2) %>% 
+    bind_rows(leveeCenterlines %>% 
+                  filter(LMA == "Glanville Tract")) %>%
+    st_union() %>% 
+    st_polygonize() %>% 
+    ggplot() +
+    geom_sf(fill = "firebrick")
+```
+
+
+#### Shared levees
+
+Many leveed areas share a levee with another area. This becomes problematic if we filter for a specific LMA, as one or more of the levees will be missing from our dataset. To solve this, find the OBJECTID of the levee segment required and include it in our filter before applying `st_union` and `st_polygonize`. In my script, you will see that I have created the helper function `sharedLevee()` to quickly do this, but the general workflow is below.
+
+```{r, fig.cap="Figure 7. Tyler Island shares a levee with Walnut Grove to the north (left). We have to supply that levee when creating this polygon as well (right)."}
+{
+  leveeCenterlines %>% 
+  filter(LMA == "Tyler Island") %>% 
+  st_union() %>% 
+  ggplot() +
+  geom_sf(fill = "firebrick")
+} * {
+  leveeCenterlines %>% 
+  filter(LMA == "Tyler Island" |
+           OBJECTID %in% c(414, 415, 417)) %>% 
+  st_union() %>% 
+  st_polygonize() %>% 
+  ggplot() +
+  geom_sf(fill = "firebrick")
+}
+```
+
+#### `st_intersection`
+
+Ocassionally, a levee line will extend beyond your desired polygon and go on to create additional polygons. The `st_polygonize` function will transform any closed shape into a polygon. One remedy to this issue is to use a bounding box to exclude any polygons beyond that box. The `st_intersection` function will calculate the overlapped area of two polygons and keep on the overlapped section.
+
+```{r, fig.cap="Figure 8. The inclusion of levee 255 introduces smaller, unwanted polgyons (left). We can get rid of them by introducing a bounding box (right)."}
+{
+  sharedLevees("lower jones tract",
+               c(filter(leveeCenterlines, LMA == "Upper Jones Tract") %>%
+                   pull(OBJECTID),
+                 255),
+               x = leveeCenterlines) %>% 
+    ggplot() +
+    geom_sf(fill = "firebrick")
+} * {
+  st_intersection(
+  sharedLevees("lower jones tract",
+               c(filter(leveeCenterlines, LMA == "Upper Jones Tract") %>%
+                   pull(OBJECTID),
+                 255),
+               leveeCenterlines),
+  # The snapCenterlines function here is my helper function incorporating the 
+  # workflow for st_snap described above
+  # st_bbox will pull out the bounding box of an object. st_as_sfc transforms 
+  # that geometry into an `sf` object, which is required to set the projection
+  # and to work with other `sf` functions.
+  st_as_sfc(st_bbox(snapCenterlines(filter(leveeCenterlines,
+                                     LMA %in% c("Lower Jones Tract", 
+                                                "Upper Jones Tract")),
+                              10), crs = 3310))
+  ) %>% 
+    ggplot() +
+    geom_sf(fill = "firebrick")
+}
+```
+
+#### `lwgeom::st_linesubstring()`
+
+A similar approach to the bounding box approach above is to limit the levee line to not include the extra polygons. We can do this using the `st_linesubstring()` function from the `lwgeom` package. This function takes two simple arguments, the start and ending proportion of the line that you want.
+
+This approach does have one major requirements to fulfill before using though: the geometry must be a LINE type. For most of our centerlines, they are of class MULTILINESTRING, meaning the line is made up of shorter line segments. We must first isolate the segment that we want. The following example is for Middle and Upper Roberts Islands.
+
+```{r, fig.cap="Figure 9. Middle and Upper Roberts Islands share levee 255 of Lower Roberts Island in the northeastern corner (left). We see that levee 255 is made up of 10 segments, of which segment 10 is the portion that we want (right)."}
+{
+  leveeCenterlines %>% 
+    filter(LMA %in% c("Middle Roberts Island", "Upper Roberts Island") |
+               OBJECTID %in% c(256, 255)) %>% 
+    st_union() %>% 
+    st_polygonize() %>% 
+    ggplot() +
+    geom_sf(fill = "firebrick")
+} * {
+  filter(leveeCenterlines, OBJECTID == 255) %>% 
+  st_cast("LINESTRING") %>% 
+  mutate(ID = factor(row_number())) %>% 
+  ggplot() +
+  geom_sf(aes(color = ID))
+}
+```
+
+Although we can close the polygon by including levee 255, there are extra small polygons that are introduced by that levee segment. To get rid of them, we now have to take only a small portion of that levee that will allow us to close the polygon of the island but exclude the smaller polygons beyond. However, when we plot out levee 255 (Figure 9, right), we see that the line is made up of 10 different segments. The linesubstring function only takes in a string geometry and not a multiline string. Therefore, we must isolate the 10th segment and then isolate just the portion of needed to complete our polygons.
+
+```{r, fig.cap="Figure 10. Levee 255 which is required to complete Middle and Upper Roberts Islands. However, we do not want the extra polygons associated with this segment. We can use 'st_linesubstring' to take only a small portion of the segment to join with, exlcuding the extra polygons (left). Once isolated, we can now use that smaller portion to complete our polygon (right). We can compare the difference to the left plot in Figure 9."}
+{
+  filter(leveeCenterlines, OBJECTID == 255) %>% 
+  st_cast("LINESTRING") %>% 
+  # Only want the 10th segment as informed by Figure 9.
+  .[10, ] %>% 
+  # now to isolate just the portion we want
+  bind_rows(
+    filter(leveeCenterlines, OBJECTID == 255) %>%
+      st_cast("LINESTRING") %>%
+      # Only want the first segment as informed by Figure 9.
+      .[10, ] %>% 
+      lwgeom::st_linesubstring(0, 0.1) %>%
+      mutate(subsetPortion = T)
+  ) %>% 
+  ggplot() +
+  geom_sf(aes(color = subsetPortion))
+} * {
+  leveeCenterlines %>% 
+  filter(LMA %in% c("Middle Roberts Island", "Upper Roberts Island") |
+           OBJECTID %in% c(256)) %>% 
+    bind_rows(leveeCenterlines %>%
+              filter(OBJECTID == 255) %>% 
+              st_cast("LINESTRING") %>% 
+              # Plot this if you're curious if this is the right line or not
+              .[10, ] %>% 
+              lwgeom::st_linesubstring(0, 0.1)) %>% 
+    st_union() %>% 
+    st_polygonize() %>% 
+    ggplot() +
+    geom_sf(fill = "firebrick")
+}
+```
+
+#### `locator()`
+
+There are instances where we will want to somewhat "freehand" a line in R. This can be done, to a limited degree, using the `locator` function. This function allows us to return the plot coordinates of our mouse clicks on the plotting panel. Those coordinates can then be combined together into a MULTILINESTRING via `st_cast`. This is a more complicated approach and I will simply refer you to the "kasson district" section in the leveeFix.R file.
+
+## Conclusion
+
+The `sf` package is very powerful and provides all the tools required to create out levee island polygons from the levee centerline shape files. The methods I have introduced here were: 
+
+1. `st_snap`
+2. `st_linestring`
+3. correctly filtering for shared levees
+4. `st_intersection`
+5. `st_linesubstring`
+6. `locator`
+
+Across all of these approaches, we should be able to programmatically  create our polygons in R in a transparent and reproducible way. The only reservation I have is if we have to freehand our lines. Not only is is that harder to programmatically  reproduce, but it is also more difficult to document our decisions--to be decided.
+
+# Appendix: 
+
+## Initial conceptualization of my workflow:
+
+### Creating a polygon:
+
+1. `st_read()`: read in the shape file. The file extension is `.shp`.
+2. `st_transform()`: reprojects the geometries if required. I have been working with crs = 3310.
+3. manipulate the data frame: this process is exactly the same as working with a regular data frame and is made efficient with `dplyr` functions:
+    I. `filter()`: used to identify specific geometries of interest
+    II. `mutate()`: create a new column in case you wanted to create new groupings
+    III. `group_by()`: iterate an operation across a grouping variable
+    IV. `summarise()`: when left as is, will connect all of the geometries into one singular unit
+4. `bind_rows()`: a `dplyr` function. This is used to connect multiple geometries together, i.e., as long as the geometries are in the same simple feature data frames, they will be plotted together.
+5. `st_union()`: connects all geometries into one singular unit. Does the same thing as summarise but is slightly faster.
+6. `st_polygonize()`: attempts to create a polygon object from the provided geometries. This will not work if geometries are not touching one another.
+
+This overall workflow occassionally needs to be supplemented with some additional operations:
+
+1. `st_cast()`: transforms the geometries into another of interest, e.g., a line into points. Variants that I have used are: "LINESTRING", "MULTILINESTRING", "POLYGON", "MULTIPOINT", and "POINT". Consult the help page for more classes.
+2. `st_touches()`: provides a narrative of which line is touching which
+3. `st_distance()`: provides a pair-wise matrix of distances between the endpoints of every line
+4. `st_bbox()`: extract the bounding box of a set of geometries
+5. `st_boundary()`: extracts the end points of a line
+6. `st_coordinates()`: provides the plot coordinates of a point.
+
+### Manipulating a polygon
+
+Quite often, lines in a shape file will not be perfectly set up to immediately create a polygon. In these cases, there are several approaches that I have applied to get them to become valid to polygonize:
+
+1. `st_snap()`: takes two lines and tries to connect them with one another. I have found that this works only if the distance between the two lines are small and straight.
+2. `st_linestring()`: manually draw a line between two points. This can be paired with the endpoints of two lines of interest. I have written `drawLine()` as a helper function to help with this process.
+3. `st_intersection()`: retain only the overlapping areas of two geometries. This is used with a bounding box (bbox) in case there are extraneous information outside of your rectangle/square area of interest.
+4. `lwgeom::st_linesubstring()`: retains only a proportion of a line. This is helpful when the line of interest extends beyond the area of interest. Generally, polygonize will ignore lines that do not form a polygon, but occassionally, a line does extend into another area that has other polygons.
+5. For the levees dataset, LMA is the name of the levee. Ocassionally, leveed areas share a levee. Therefore, grouping by LMA and simply polygonizing those lines may not work as not all the required lines are present. In this case, use `bind_rows()` or a correct `filter()` statement to get all of your geometries within the same data frame before trying to turn it into a polygon. In this effort, I have created the `sharedLevees()` as a helper function for this.
+6. `locator()`: this function allows you to draw on the plotting panel various points and grab those coordinates. This is helpful when you want to manually draw the lines to complete a polygon. This works well for linear borders and is not really meant to allow you to freehand a border. The returned points must be converted into a multiline string by first creating a data frame of the X and Y coordinates, converting it into an sf object with `st_as_sf()`, summarizing the points into a "MULTIPOINT" geometry with `summarise()`, and then to a multiline string with `st_cast("MULTILINESTRING")`.

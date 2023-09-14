@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?><metadata>
+    <idinfo>
+        <citation>
+            <citeinfo>
+                <origin/>
+                <title>Delta Levees Centerlines 2017</title>
+                <onlink>https://gis.water.ca.gov/arcgis/rest/services/Structure/i17_Delta_Levees_Centerlines_2017/FeatureServer</onlink>
+            </citeinfo>
+        </citation>
+        <descript>
+            <abstract>Detailed center lines of the Sacramento-San Joaquin levee systems, and broken into singular segments of consistent-attribute sets. &#13;
+The use of high-resolution LiDAR, and the products derived from it, allow for levee anatomy to be captured for the surveyed area. The resulting data allows for the levee crown sections to be isolated and collapsed to a centerline, detailing the route of the levee system. This data can further be used for levee maintenance and management, flood modeling and prediction, as well as levee inventories. The data are therefore mostly the structural center lines of the levees, with some minor modifications as warranted.&#13;
+&#13;
+In the Delta Anatomy Mapping Project, all levee anatomies were delineated using slope grids built from available 2007 Delta LIDAR data points. LIDAR data points were converted to digital elevation models and subsequently into slope grids. Thresholds were identified that capture the levee crown, levee landside, levee waterside, ramps and toe ditchesi. &#13;
+&#13;
+The associated data are considered DWR enterprise GIS data, which meet all appropriate requirements of the DWR Spatial Data Standards, specifically the DWR Spatial Data Standard version 3.1, dated September 11, 2019.  &#13;
+DWR makes no warranties or guarantees — either expressed or implied — as to the completeness, accuracy, or correctness of the data. DWR neither accepts nor assumes liability arising from or for any incorrect, incomplete, or misleading subject data.  &#13;
+Comments, problems, improvements, updates, or suggestions should be sent to gis@water.ca.gov.</abstract>
+            <purpose>Detailed center lines of the Sacramento-San Joaquin levee systems (from 2017 LiDAR), and broken into singular segments of consistent-attribute sets.</purpose>
+        </descript>
+        <keywords>
+            <theme>
+                <themekt>None</themekt>
+                <themekey>structure</themekey>
+                <themekey>boundaries</themekey>
+                <themekey>Delta</themekey>
+                <themekey>California 2017 Bare Earth LiDAR</themekey>
+                <themekey>Levee</themekey>
+                <themekey>Levee Anatomy</themekey>
+                <themekey>California</themekey>
+                <themekey>Levee Delta</themekey>
+            </theme>
+        </keywords>
+        <accconst>Other Constraints</accconst>
+        <useconst>Public Domain</useconst>
+        <datacred>California Department of Water Resources. Contact: gis@water.ca.gov</datacred>
+    </idinfo>
+    <metainfo>
+        <metd>20220114</metd>
+        <metc>
+            <cntinfo>
+                <!--no contact person or organization name available-->
+            </cntinfo>
+        </metc>
+        <metstdn>FGDC Content Standard for Digital Geospatial Metadata</metstdn>
+        <metstdv>FGDC-STD-001-1998</metstdv>
+        <mettc>local time</mettc>
+    </metainfo>
+</metadata>

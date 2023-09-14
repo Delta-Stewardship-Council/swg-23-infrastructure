@@ -6,6 +6,8 @@ library(rvest)
 library(dplyr)
 library(sf)
 library(readr)
+library(patchwork)
+library(ggplot2)
 
 # Remove scientific notation
 options(scipen = 9999)
@@ -108,51 +110,136 @@ downloadCNRA("https://data.cnra.ca.gov/dataset/gspar",
 # For now, download the csv file at:
 # https://gis.data.ca.gov/datasets/CDFW::statewide-terrestrial-native-species-richness-summary-ace-ds1332/about
 
-area$nativeRichness <- read_csv(
-  file.path("data-raw", "csvFiles", "Statewide_Terrestrial_Native_Species_Richness_Summary_-_ACE_[ds1332].csv"), 
-  col_types = cols(
-    OBJECTID = col_double(),
-    Hex_ID = col_double(),
-    NtvRankEco = col_double(),
-    NtvSumEco = col_double(),
-    NtvRankSW = col_double(),
-    NtvSumSW = col_double(),
-    NativeCount = col_double(),
-    NtvAmph = col_double(),
-    NtvRept = col_double(),
-    NtvBird = col_double(),
-    NtvMamm = col_double(),
-    NtvPlnt = col_double(),
-    GameCount = col_double(),
-    ClimVulCount = col_double(),
-    Eco_Sect = col_character(),
-    Eco_Name = col_character(),
-    Jepson_Eco = col_character(),
-    County = col_character(),
-    Shape__Area = col_double(),
-    Shape__Length = col_double()
-  ),
-) %>% 
+shapefiles$speciesRichness <- st_read("C:\\Users\\TXNguyen\\Documents\\GitHub\\swg-23-infrastructure\\data-raw\\shapefiles\\nativeSpeciesRichness\\Statewide_Terrestrial_Native_Species_Richness_Summary_-_ACE_[ds1332].shp") %>% 
   rename(
     ecoRegionNativeRank = NtvRankEco,
     ecoRegionNativeWeight = NtvSumEco,
     stateNativeRank = NtvRankSW,
     stateNativeWeight = NtvSumSW,
-    nativeCount = NativeCount,
+    nativeCount = NativeCoun,
     nativeAmphibianCount = NtvAmph,
     nativeReptailCount = NtvRept,
     nativeBirdCount = NtvBird,
     nativeMammalCount = NtvMamm,
     nativePlantCount = NtvPlnt,
     gameCount = GameCount,
-    climateVulnerableCount = ClimVulCount,
+    climateVulnerableCount = ClimVulCou,
     ecoRegionCode = Eco_Sect,
     ecoRegionName = Eco_Name,
     ecoRegionCodeJepson = Jepson_Eco,
     county = County,
-    area = Shape__Area,
-    length = Shape__Length
+    area = Shape__Are,
+    length = Shape__Len
   )
+
+# area$nativeRichness <- read_csv(
+#   file.path("data-raw", "csvFiles", "Statewide_Terrestrial_Native_Species_Richness_Summary_-_ACE_[ds1332].csv"), 
+#   col_types = cols(
+#     OBJECTID = col_double(),
+#     Hex_ID = col_double(),
+#     NtvRankEco = col_double(),
+#     NtvSumEco = col_double(),
+#     NtvRankSW = col_double(),
+#     NtvSumSW = col_double(),
+#     NativeCount = col_double(),
+#     NtvAmph = col_double(),
+#     NtvRept = col_double(),
+#     NtvBird = col_double(),
+#     NtvMamm = col_double(),
+#     NtvPlnt = col_double(),
+#     GameCount = col_double(),
+#     ClimVulCount = col_double(),
+#     Eco_Sect = col_character(),
+#     Eco_Name = col_character(),
+#     Jepson_Eco = col_character(),
+#     County = col_character(),
+#     Shape__Area = col_double(),
+#     Shape__Length = col_double()
+#   ),
+# ) %>% 
+#   rename(
+#     ecoRegionNativeRank = NtvRankEco,
+#     ecoRegionNativeWeight = NtvSumEco,
+#     stateNativeRank = NtvRankSW,
+#     stateNativeWeight = NtvSumSW,
+#     nativeCount = NativeCount,
+#     nativeAmphibianCount = NtvAmph,
+#     nativeReptailCount = NtvRept,
+#     nativeBirdCount = NtvBird,
+#     nativeMammalCount = NtvMamm,
+#     nativePlantCount = NtvPlnt,
+#     gameCount = GameCount,
+#     climateVulnerableCount = ClimVulCount,
+#     ecoRegionCode = Eco_Sect,
+#     ecoRegionName = Eco_Name,
+#     ecoRegionCodeJepson = Jepson_Eco,
+#     county = County,
+#     area = Shape__Area,
+#     length = Shape__Length
+#   )
+
+# delta levees ------------------------------------------------------------
+
+# Have to download delta levee shape files
+# "https://gis.data.ca.gov/datasets/7995cfe94bcc4e15afe92f40efb66cc6_0/explore"
+
+shapefiles$levees <- st_read(file.path("data-raw", "shapefiles", "deltaLeveeAreas", 
+                                       "i17_Delta_Levees_Centerlines_2017.shp")) %>%
+  st_transform(crs = 3310)
+
+area$levees <- lapply(na.omit(unique(shapefiles$levees$LMA)),
+                      function(x) {
+                        polygon <- shapefiles$levees %>% 
+                          filter(LMA == x) %>% 
+                          st_union() %>% 
+                          st_polygonize()
+                        
+                        area <- polygon %>% 
+                          st_area() %>% 
+                          units::set_units(acre) %>% 
+                          as.numeric()
+                        
+                        if (area == 0) {
+                          p = NULL
+                        } else {
+                          p <- ggplot() +
+                            geom_sf(data = polygon, fill = "lightblue") +
+                            labs(title = x, subtitle = paste0("Acres: ", area)) +
+                            theme_minimal()
+                        }
+                        
+                        df <- tibble(LMA = x,
+                                     acres = area)
+                        
+                        list(df = df,
+                             polygon = polygon,
+                             p = p)
+                      }) %>% 
+  setNames(na.omit(unique(shapefiles$levees$LMA)))
+
+area$leveesDF <- lapply(area$levees, "[[", 1) %>% 
+  bind_rows() %>% 
+  arrange(-acres) %>% 
+  mutate(LMA = tolower(LMA)) %>% 
+  full_join(read.csv(file.path("data-raw", "csvFiles", "DLIS.IslandBasics.csv"), check.names = F) %>% 
+              transmute(LMA = tolower(`Field Name`),
+                        acresDLIS = `Area (acres)`,
+                        priorityIsland = `Priority Island`,
+                        leveed = Leveed,
+                        active = `Active for DLIS`),
+            by = "LMA") %>% 
+  mutate(difference = acres - acresDLIS)
+
+# Loading in the DLIS islands shape file to compare areas highlighted
+shapefiles$DLISLevees <- st_read(file.path("data-raw", "shapefiles", "RevisedIslands_160912_AllIslands", 
+                                           "RevisedIslands_160912_AllIslands.shp"))
+
+
+# i03 Suisun Marsh --------------------------------------------------------
+
+downloadCNRA("https://data.cnra.ca.gov/dataset/i03-suisunmarshboundary", file = "ShapefileZIP",
+             method = "curl") %>% 
+  unzipShapefile(outPath = file.path("data-raw", "shapefiles", "suisunMarsh"))
 
 # Saving the RData file ---------------------------------------------------
 

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?><metadata>
+    <idinfo>
+        <citation>
+            <citeinfo>
+                <origin/>
+                <title>Suisun Marsh Boundary</title>
+                <onlink>https://gis.water.ca.gov/arcgis/rest/services/Boundaries/i03_SuisunMarshBoundary/FeatureServer</onlink>
+            </citeinfo>
+        </citation>
+        <descript>
+            <abstract>This feature class was digitized from the map, A.B. 1717, by Jeff Galef on August 22, 2012. The features were labeled as being in the Primary or Secondary Zone. The digitizing was done at a 1:4,000 scale. The features were digitized by a map that was georeferenced by Jeff Galef on July 25, 2012. The number of control points used was 25. The RMS error was 13.74340. The georeferencing was performed against the 2009 NAIP imagery, which was projected to UTM Zone 10, NAD 83.Digitizing was difficult since the line borders and the associated colors often did not match up. That is, there was a fair amount of overlap. The decision was made that the digitizing would follow the thick red and black lines where available. Otherwise, the digitizing followed the coloring. This feature class was edited on November 26, 2013 by Terri Fong to reflect the San Francisco Bay Conservation and Development Commission's map amendments of 2011. The amendments are described in Resolution No. 11-05 which can be found here: http://www.bcdc.ca.gov/BPA/Final2011.07.01.ResolutionNo1.10.pdf. This resolution changes the size of the Water Related Industry Reserve Area near Collinsville. The current Boundaries of the Suisun Marsh map can be found here: http://www.bcdc.ca.gov/plans/SMboundaries.pdf.</abstract>
+            <purpose>This dataset depicts the boundaries of the Suisun Marsh.</purpose>
+        </descript>
+        <keywords>
+            <theme>
+                <themekt>None</themekt>
+                <themekey>California</themekey>
+                <themekey>boundary</themekey>
+                <themekey>Solano County</themekey>
+                <themekey>Suisun Marsh</themekey>
+                <themekey>California Natural Resources Agency</themekey>
+                <themekey>CAOpenData</themekey>
+                <themekey>California Department of Water Resources</themekey>
+                <themekey>marsh</themekey>
+            </theme>
+        </keywords>
+        <accconst>Other Constraints</accconst>
+        <useconst>DWR makes no warranties or guarantees, either expressed or implied, as to the completeness, accuracy or correctness of the data, nor accepts or assumes any liability arising from or for any incorrect, incomplete or misleading subject data.</useconst>
+        <datacred>California Department of Water Resources. Contact: gis@water.ca.gov</datacred>
+    </idinfo>
+    <metainfo>
+        <metd>20210630</metd>
+        <metc>
+            <cntinfo>
+                <cntorgp>
+                    <cntorg>California Department of Water Resources</cntorg>
+                </cntorgp>
+            </cntinfo>
+        </metc>
+        <metstdn>FGDC Content Standard for Digital Geospatial Metadata</metstdn>
+        <metstdv>FGDC-STD-001-1998</metstdv>
+        <mettc>local time</mettc>
+    </metainfo>
+</metadata>
