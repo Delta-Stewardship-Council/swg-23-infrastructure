@@ -1,6 +1,11 @@
 # This explores the levee centerlines
 source(file.path("R", "createLeveePolygons.R"))
 
+#### IMPORTANT ####
+# Make sure you run through at least these two sections in "ecologicalAssets.R":
+# Section "Data lists"
+# Section "delta levees"
+
 # failedPolygons <- area$leveesDF %>% 
 #   filter(acres == 0, acresDLIS > 0)
 
@@ -798,9 +803,9 @@ shapefiles$deltaTidal <- st_read(file.path("data-raw", "shapefiles", "deltaBound
                                            "SacSJ_TidallyInfluencedBoundary", "Tidally_Influenced_Delta_SacSJ.shp")) %>% 
   st_transform(crs = 3310)
 
-shapefiles$deltaTidal %>% 
-  ggplot() +
-  geom_sf(fill = "firebrick")
+# shapefiles$deltaTidal %>% 
+#   ggplot() +
+#   geom_sf(fill = "firebrick")
 
 
 # {bind_rows(shapefiles$deltaTidal %>%
@@ -843,30 +848,6 @@ shapefiles$deltaLegal <- st_read(file.path("data-raw", "shapefiles", "deltaBound
 #       theme_minimal() +
 #       theme(legend.position = "bottom")}
 
-{bind_rows(shapefiles$deltaLegal %>% 
-            mutate(dataset = "delta"),
-          shapefiles$levees %>% 
-            filter(LMA %in% {polygonDF %>% 
-                     filter(st_is_empty(.)) %>% 
-                     pull(LMA)}) %>% 
-            mutate(dataset = "leftover"),
-          polygonDF %>% 
-            filter(!st_is_empty(.)) %>% 
-            mutate(dataset = "levees")) %>% 
-  ggplot() +
-  geom_sf(aes(color = dataset)) +
-  theme_minimal() +
-  theme(legend.position = "bottom")} *
-  {bind_rows(shapefiles$DLISLevees %>% 
-               mutate(dataset = "levees"),
-             shapefiles$deltaLegal %>% 
-               mutate(dataset = "delta") %>% 
-               st_cast("MULTILINESTRING")) %>% 
-      ggplot() +
-      geom_sf(aes(color = dataset)) +
-      theme_minimal() +
-      theme(legend.position = "bottom")}
-
 legalDeltaFix <- list()
 
 # DLIS-19 Grizzly Slough Area ---------------------------------------------
@@ -893,48 +874,49 @@ legalDeltaFix <- list()
 #   filter(st_is_empty(.)) %>% 
 #   pull(LMA)
 
-bind_rows(
-  shapefiles$DLISLevees %>%
-    filter(NAME == "DLIS-19 (GRIZZLY SLOUGH AREA)"),
-  shapefiles$levees %>% 
-    filter(OBJECTID %in% c(209, 14, 469, 497, 83))
-) %>% 
-  st_geometry() %>% 
-  plot()
-
-# points <- locator(type = "p")
-pointsA <- list(x = c(-126029.7, -125843.9, -125678.8),
-                y = c(27632.85, 27560.59, 27457.37))
-
-pointsB <- list(x = c(-121869.9, -121859.6, -121818.3),
-                y = c(22967.25, 22843.38, 22678.23))
-
-data.frame(
-  x = c(pointsA$x), 
-  y = c(pointsA$y)
-) %>% 
-  st_as_sf(coords = c("x", "y"), crs = 3310) %>% 
-  summarise() %>% 
-  st_cast("MULTILINESTRING") %>% 
-  bind_rows(
-    data.frame(
-      x = c(pointsB$x), 
-      y = c(pointsB$y)
-    ) %>% 
-      st_as_sf(coords = c("x", "y"), crs = 3310) %>% 
-      summarise() %>% 
-      st_cast("MULTILINESTRING"),
-    shapefiles$levees %>% 
-      filter(OBJECTID %in% c(8, 209, 14, 469, 497, 83)),
-    shapefiles$deltaLegal %>% 
-      st_cast("LINESTRING") %>% 
-      lwgeom::st_linesubstring(0.25, 0.3111)
-  ) %>% 
-  st_union() %>% 
-  st_polygonize() %>% 
-  ggplot() +
-  geom_sf(fill = "firebrick")
-# Not finished
+# # START HERE
+# bind_rows(
+#   shapefiles$DLISLevees %>%
+#     filter(NAME == "DLIS-19 (GRIZZLY SLOUGH AREA)"),
+#   shapefiles$levees %>% 
+#     filter(OBJECTID %in% c(209, 14, 469, 497, 83))
+# ) %>% 
+#   st_geometry() %>% 
+#   plot()
+# 
+# # points <- locator(type = "p")
+# pointsA <- list(x = c(-126029.7, -125843.9, -125678.8),
+#                 y = c(27632.85, 27560.59, 27457.37))
+# 
+# pointsB <- list(x = c(-121869.9, -121859.6, -121818.3),
+#                 y = c(22967.25, 22843.38, 22678.23))
+# 
+# data.frame(
+#   x = c(pointsA$x), 
+#   y = c(pointsA$y)
+# ) %>% 
+#   st_as_sf(coords = c("x", "y"), crs = 3310) %>% 
+#   summarise() %>% 
+#   st_cast("MULTILINESTRING") %>% 
+#   bind_rows(
+#     data.frame(
+#       x = c(pointsB$x), 
+#       y = c(pointsB$y)
+#     ) %>% 
+#       st_as_sf(coords = c("x", "y"), crs = 3310) %>% 
+#       summarise() %>% 
+#       st_cast("MULTILINESTRING"),
+#     shapefiles$levees %>% 
+#       filter(OBJECTID %in% c(8, 209, 14, 469, 497, 83)),
+#     shapefiles$deltaLegal %>% 
+#       st_cast("LINESTRING") %>% 
+#       lwgeom::st_linesubstring(0.25, 0.3111)
+#   ) %>% 
+#   st_union() %>% 
+#   st_polygonize() %>% 
+#   ggplot() +
+#   geom_sf(fill = "firebrick")
+# # Not finished
 
 # NORTH STOCKTON ----------------------------------------------------------
 
@@ -991,13 +973,6 @@ legalDeltaFix$`Reclamation District No. 17` <- shapefiles$levees %>%
   st_union() %>% 
   st_polygonize()
 
-# Folding in Suisun Marsh area --------------------------------------------
-
-polygons$`Suisun Marsh` <- st_read(file.path("data-raw", "shapefiles", "suisunMarsh", "i03_SuisunMarshBoundary.shp")) %>% 
-  st_transform(crs = 3310) %>% 
-  filter(LOCATION != "Primary (Water)") %>% 
-  mutate(LMA = "Suisun Marsh")
-
 # Final product -----------------------------------------------------------
 
 # Which polygons were successful?
@@ -1050,6 +1025,13 @@ polygons$`North Stockton` <- data.frame(LMA = "North Stockton",
                                         legalDeltaFix$`North Stockton`)
 polygons$`Reclamation District No. 17` <- data.frame(LMA = "Reclamation District No. 17",
                                                      legalDeltaFix$`Reclamation District No. 17`)
+
+# Folding in Suisun Marsh area --------------------------------------------
+
+polygons$`Suisun Marsh` <- st_read(file.path("data-raw", "shapefiles", "suisunMarsh", "i03_SuisunMarshBoundary.shp")) %>% 
+  st_transform(crs = 3310) %>% 
+  filter(LOCATION != "Primary (Water)") %>% 
+  mutate(LMA = "Suisun Marsh")
 
 # Plotting everything
 polygonDF <- bind_rows(polygons) %>% 
