@@ -920,17 +920,17 @@ legalDeltaFix <- list()
 
 # NORTH STOCKTON ----------------------------------------------------------
 
-shapefiles$levees %>% 
-  filter(OBJECTID %in% c(457, 78, 356, 353, 354, 368, 87, 369, 88, 452, 340, 
-                         341, 342, 343, 344, 345, 82, 89)) %>% 
-  bind_rows(shapefiles$deltaLegal %>% 
-              st_cast("LINESTRING"),
-            shapefiles$deltaLegal %>% 
-              st_cast("LINESTRING") %>% 
-              lwgeom::st_linesubstring(0.37, 0.4) %>% 
-              mutate(extract = T)) %>% 
-  ggplot() +
-  geom_sf(aes(color = extract))
+# shapefiles$levees %>% 
+#   filter(OBJECTID %in% c(457, 78, 356, 353, 354, 368, 87, 369, 88, 452, 340, 
+#                          341, 342, 343, 344, 345, 82, 89)) %>% 
+#   bind_rows(shapefiles$deltaLegal %>% 
+#               st_cast("LINESTRING"),
+#             shapefiles$deltaLegal %>% 
+#               st_cast("LINESTRING") %>% 
+#               lwgeom::st_linesubstring(0.37, 0.4) %>% 
+#               mutate(extract = T)) %>% 
+#   ggplot() +
+#   geom_sf(aes(color = extract))
 
 # Need to draw line between 369 and 88 to close off
 legalDeltaFix$`North Stockton` <- drawLine(shapefiles$levees %>% 
@@ -951,17 +951,17 @@ legalDeltaFix$`North Stockton` <- drawLine(shapefiles$levees %>%
 
 # RECLAMATION DISTRICT 17 -------------------------------------------------
 
-plotLeveeLines("Reclamation District No. 17")
-shapefiles$levees %>% 
-  filter(LMA == "Reclamation District No. 17") %>% 
-  bind_rows(shapefiles$deltaLegal %>% 
-              st_cast("LINESTRING"),
-            shapefiles$deltaLegal %>% 
-              st_cast("LINESTRING") %>% 
-              lwgeom::st_linesubstring(0.4, .47) %>% 
-              mutate(extract = T)) %>% 
-  ggplot() +
-  geom_sf(aes(color = extract))
+# plotLeveeLines("Reclamation District No. 17")
+# shapefiles$levees %>% 
+#   filter(LMA == "Reclamation District No. 17") %>% 
+#   bind_rows(shapefiles$deltaLegal %>% 
+#               st_cast("LINESTRING"),
+#             shapefiles$deltaLegal %>% 
+#               st_cast("LINESTRING") %>% 
+#               lwgeom::st_linesubstring(0.4, .47) %>% 
+#               mutate(extract = T)) %>% 
+#   ggplot() +
+#   geom_sf(aes(color = extract))
 
 legalDeltaFix$`Reclamation District No. 17` <- shapefiles$levees %>% 
   filter(LMA == "Reclamation District No. 17") %>% 
@@ -988,7 +988,7 @@ polygons <- lapply(area$levees, function(x) {
 # Of the unsuccessful polygons, update the ones that were manually fixed:
 # in the order of: inconsistentName, sharedLeveeFixed, snappedFixed, legalDeltaFixed
 
-inconsistentName
+# inconsistentName
 polygons$`Orwood and Palm Tract` <- data.frame(LMA = "Orwood and Palm Tract",
                                                area$levees$`Orwood and Palm Tract`$polygon)
 polygons$`Canal Ranch` <- data.frame(LMA = "Canal Ranch",
@@ -1007,7 +1007,7 @@ polygons$`Roberts Island` <- data.frame(LMA = "Roberts Island",
 polygons$`Wright-Elmwood Tract`$geometry <- sharedLeveeFixed$`Wright-Elmwood Tract`
 polygons$`Prospect Island`$geometry <- sharedLeveeFixed$`Prospect Island`
 
-names(snappedFixed)
+# names(snappedFixed)
 polygons$`Glanville Tract` <- data.frame(LMA = "Glanville Tract",
                                          snappedFixed$`Glanville Tract`)
 polygons$`New Hope Tract`$geometry <- snappedFixed$`New Hope Tract`
@@ -1017,10 +1017,10 @@ polygons$`Winter Island`$geometry <- snappedFixed$`Winter Island`
 polygons$`West Sacramento`$geometry <- snappedFixed$`West Sacramento`
 polygons$`Bethel Island`$geometry <- snappedFixed$`Bethel Island`
 
-names(drawnDLIS)
+# names(drawnDLIS)
 polygons$`Kasson District`$geometry <- drawnDLIS$`Kasson District`$geometry
 
-names(legalDeltaFix)
+# names(legalDeltaFix)
 polygons$`North Stockton` <- data.frame(LMA = "North Stockton",
                                         legalDeltaFix$`North Stockton`)
 polygons$`Reclamation District No. 17` <- data.frame(LMA = "Reclamation District No. 17",
@@ -1031,69 +1031,175 @@ polygons$`Reclamation District No. 17` <- data.frame(LMA = "Reclamation District
 polygons$`Suisun Marsh` <- st_read(file.path("data-raw", "shapefiles", "suisunMarsh", "i03_SuisunMarshBoundary.shp")) %>% 
   st_transform(crs = 3310) %>% 
   filter(LOCATION != "Primary (Water)") %>% 
-  mutate(LMA = "Suisun Marsh")
+  mutate(LMA = "Suisun Marsh") %>% 
+  st_union() %>% 
+  data.frame(LMA = "Suisun Marsh", .)
 
 # Plotting everything
 polygonDF <- bind_rows(polygons) %>% 
   st_sf()
 
-{polygonDF %>% 
-    ggplot(aes(fill = LMA)) +
-    geom_sf() +
-    theme_minimal() +
-    theme(legend.position = "none")} * 
-  {shapefiles$DLISLevees %>% 
-      ggplot(aes(fill = NAME)) +
+# Saving the shape file ---------------------------------------------------
+st_write(
+  lapply(polygons, function(x) {
+    
+    if (!is.null(x$geometry)) {
+      if (any(st_geometry_type(x$geometry) == "GEOMETRYCOLLECTION")) {
+        data.frame(LMA = x$LMA,
+                   x$geometry %>% 
+                     .[[1]] %>% 
+                     st_multipolygon() %>% 
+                     st_sfc(crs = 3310))
+      } else {
+        data.frame(LMA = x$LMA,
+                   x$geometry %>% 
+                     st_cast("MULTIPOLYGON") %>% 
+                     .[[1]] %>% 
+                     st_multipolygon() %>% 
+                     st_sfc(crs = 3310))
+      }
+    } else {
+      data.frame(LMA = x$LMA,
+                 st_sfc(st_multipolygon(list()), crs = 3310))
+    }
+  }) %>% 
+    bind_rows(), 
+  file.path("data", "shapefiles", "fixedLevees", "fixedLevees.shp"), 
+  append = F
+)
+
+# Saving RData
+save.image(file.path("data", paste0("fixedLevees_", format(Sys.Date(), "%m%d%y"), ".RData")))
+
+stop()
+
+finalFigures <- list(
+  # Fixed levee polygons vs RAND model
+  {polygonDF %>% 
+      ggplot(aes(fill = LMA)) +
       geom_sf() +
       theme_minimal() +
-      theme(legend.position = "none")}
-
-{bind_rows(shapefiles$levees %>% 
-             filter(LMA %in% {polygonDF %>% 
-                 filter(st_is_empty(.)) %>% 
-                 pull(LMA)}) %>% 
-             mutate(dataset = "leftover"),
-           polygonDF %>% 
-             filter(!st_is_empty(.)) %>% 
-             mutate(dataset = "levees"),
-           shapefiles$deltaLegal %>% 
-             mutate(dataset = "delta") %>% 
-             st_cast("LINESTRING")) %>% 
-    ggplot() +
-    geom_sf(aes(color = dataset)) +
-    theme_minimal() +
-    theme(legend.position = "bottom")} *
-  {bind_rows(shapefiles$DLISLevees %>% 
+      labs(title = "Fixed levee centerlines") +
+      theme(legend.position = "none")} * 
+    {shapefiles$DLISLevees %>% 
+        ggplot(aes(fill = NAME)) +
+        geom_sf() +
+        theme_minimal() +
+        labs(title = "RAND Model") +
+        theme(legend.position = "none")},
+  # Fixed levee polygons vs RAND model against Legal Delta
+  {bind_rows(shapefiles$levees %>% 
+               filter(LMA %in% {polygonDF %>% 
+                   filter(st_is_empty(.)) %>% 
+                   pull(LMA)}) %>% 
+               mutate(dataset = "leftover"),
+             polygonDF %>% 
+               st_cast("MULTIPOLYGON") %>% 
+               filter(!st_is_empty(.)) %>% 
                mutate(dataset = "levees"),
              shapefiles$deltaLegal %>% 
                mutate(dataset = "delta") %>% 
-               st_cast("MULTILINESTRING")) %>% 
+               st_cast("LINESTRING")) %>% 
       ggplot() +
       geom_sf(aes(color = dataset)) +
       theme_minimal() +
-      theme(legend.position = "bottom")}
-
-{bind_rows(shapefiles$levees %>% 
-             filter(LMA %in% {polygonDF %>% 
-                 filter(st_is_empty(.)) %>% 
-                 pull(LMA)}) %>% 
-             mutate(dataset = "leftover"),
-           polygonDF %>% 
-             filter(!st_is_empty(.)) %>% 
-             mutate(dataset = "levees"),
-           shapefiles$deltaTidal %>% 
-             mutate(dataset = "delta") %>% 
-             st_cast("LINESTRING")) %>% 
-    ggplot() +
-    geom_sf(aes(color = dataset)) +
-    theme_minimal() +
-    theme(legend.position = "bottom")} *
-  {bind_rows(shapefiles$DLISLevees %>% 
+      theme(legend.position = "bottom")} *
+    {bind_rows(shapefiles$DLISLevees %>% 
+                 mutate(dataset = "levees"),
+               shapefiles$deltaLegal %>% 
+                 mutate(dataset = "delta") %>% 
+                 st_cast("MULTILINESTRING")) %>% 
+        ggplot() +
+        geom_sf(aes(color = dataset)) +
+        theme_minimal() +
+        theme(legend.position = "bottom")},
+  # Fixed levee polygons vs RAND model against functional Delta
+  {bind_rows(shapefiles$levees %>% 
+               filter(LMA %in% {polygonDF %>% 
+                   filter(st_is_empty(.)) %>% 
+                   pull(LMA)}) %>% 
+               mutate(dataset = "leftover"),
+             polygonDF %>% 
+               filter(!st_is_empty(.)) %>% 
                mutate(dataset = "levees"),
              shapefiles$deltaTidal %>% 
                mutate(dataset = "delta") %>% 
-               st_cast("MULTILINESTRING")) %>% 
+               st_cast("LINESTRING")) %>% 
       ggplot() +
       geom_sf(aes(color = dataset)) +
       theme_minimal() +
-      theme(legend.position = "bottom")}
+      theme(legend.position = "bottom")} *
+    {bind_rows(shapefiles$DLISLevees %>% 
+                 mutate(dataset = "levees"),
+               shapefiles$deltaTidal %>% 
+                 mutate(dataset = "delta") %>% 
+                 st_cast("MULTILINESTRING")) %>% 
+        ggplot() +
+        geom_sf(aes(color = dataset)) +
+        theme_minimal() +
+        theme(legend.position = "bottom")},
+  # Fixed levee polygons using Legal Delta and Functional Delta
+  {bind_rows(shapefiles$levees %>% 
+               filter(LMA %in% {polygonDF %>% 
+                   filter(st_is_empty(.)) %>% 
+                   pull(LMA)}) %>% 
+               mutate(dataset = "leftover"),
+             polygonDF %>% 
+               filter(!st_is_empty(.)) %>% 
+               mutate(dataset = "levees"),
+             shapefiles$deltaLegal %>% 
+               mutate(dataset = "delta") %>% 
+               st_cast("LINESTRING")) %>% 
+      ggplot() +
+      geom_sf(aes(color = dataset)) +
+      theme_minimal() +
+      labs(title = "Fixed polygons, Legal Delta") +
+      theme(legend.position = "bottom")} *
+    {bind_rows(shapefiles$levees %>% 
+                 filter(LMA %in% {polygonDF %>% 
+                     filter(st_is_empty(.)) %>% 
+                     pull(LMA)}) %>% 
+                 mutate(dataset = "leftover"),
+               polygonDF %>% 
+                 filter(!st_is_empty(.)) %>% 
+                 mutate(dataset = "levees"),
+               shapefiles$deltaTidal %>% 
+                 mutate(dataset = "delta") %>% 
+                 st_cast("LINESTRING")) %>% 
+        ggplot() +
+        geom_sf(aes(color = dataset)) +
+        theme_minimal() +
+        labs(title = "Fixed polygons, Functional Delta") +
+        theme(legend.position = "bottom")},
+  {polygonDF %>% 
+      ggplot(aes(fill = LMA)) +
+      geom_sf() +
+      theme_minimal(base_size = 19) +
+      labs(title = "From RData") +
+      theme(legend.position = "none")} * 
+    {st_read(file.path("data", "shapefiles", "fixedLevees", "fixedLevees.shp")) %>% 
+        ggplot(aes(fill = LMA)) +
+        geom_sf() +
+        theme_minimal(base_size = 19) +
+        labs(title = "From shapefile") +
+        theme(legend.position = "none")}
+) %>% 
+  setNames(
+    c("fixedVsRAND",
+      "againstLegalDelta",
+      "againstFunctionalDelta",
+      "fixedVsDelta",
+      "RDataVsShapefile")
+  )
+
+library(Cairo)
+
+# Loop through the list and save each plot
+
+for (i in seq_along(finalFigures)) {
+  CairoPNG(file = file.path("data", "figures", paste0(names(finalFigures)[i], ".png")), 
+           width = 15, height = 10, units = "in", res = 300)
+  print(finalFigures[[i]])
+  dev.off()
+}
+

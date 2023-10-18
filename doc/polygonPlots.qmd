@@ -1,0 +1,155 @@
+---
+title: "Spatial Data: Creating Polygons"
+author: "TXN"
+date: last-modified
+date-format: "MMMM DD, YYYY"
+format: pdf
+execute: 
+  echo: false
+  warning: false
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(dpi=320, fig.width=15, fig.height=10, warning=FALSE, message=F, 
+                      dev = "CairoPNG",
+                      dev.args = list(pointsize = 13))
+
+options(scipen = 99999)
+
+library(sf)
+library(dplyr)
+library(ggplot2)
+library(patchwork)
+
+load(file.path("..", "data", "fixedLevees_101823.RData"))
+```
+
+# Purpose
+
+This document contains various illustrations of the leveed area polygons, fixed programatically.
+
+# Fixed levee polygons vs RAND
+```{r}
+{polygonDF %>% 
+    ggplot(aes(fill = LMA)) +
+    geom_sf() +
+    theme_minimal(base_size = 19) +
+    labs(title = "Fixed levee centerlines") +
+    theme(legend.position = "none")} * 
+  {shapefiles$DLISLevees %>% 
+      ggplot(aes(fill = NAME)) +
+      geom_sf() +
+      theme_minimal(base_size = 19) +
+      labs(title = "RAND Model") +
+      theme(legend.position = "none")}
+```
+
+# Fixed levee polygons and RAND against Legal Delta
+```{r}
+{bind_rows(shapefiles$levees %>% 
+             filter(LMA %in% {polygonDF %>% 
+                 filter(st_is_empty(.)) %>% 
+                 pull(LMA)}) %>% 
+             mutate(dataset = "leftover"),
+           polygonDF %>% 
+             st_cast("MULTIPOLYGON") %>% 
+             filter(!st_is_empty(.)) %>% 
+             mutate(dataset = "levees"),
+           shapefiles$deltaLegal %>% 
+             mutate(dataset = "delta") %>% 
+             st_cast("LINESTRING")) %>% 
+    ggplot() +
+    geom_sf(aes(color = dataset)) +
+    theme_minimal(base_size = 19) +
+    theme(legend.position = "bottom")} *
+  {bind_rows(shapefiles$DLISLevees %>% 
+               mutate(dataset = "levees"),
+             shapefiles$deltaLegal %>% 
+               mutate(dataset = "delta") %>% 
+               st_cast("MULTILINESTRING")) %>% 
+      ggplot() +
+      geom_sf(aes(color = dataset)) +
+      theme_minimal(base_size = 19) +
+      theme(legend.position = "bottom")}
+```
+
+# Fixed levee polygons and RAND against functional Delta
+```{r}
+{bind_rows(shapefiles$levees %>% 
+             filter(LMA %in% {polygonDF %>% 
+                 filter(st_is_empty(.)) %>% 
+                 pull(LMA)}) %>% 
+             mutate(dataset = "leftover"),
+           polygonDF %>% 
+             filter(!st_is_empty(.)) %>% 
+             mutate(dataset = "levees"),
+           shapefiles$deltaTidal %>% 
+             mutate(dataset = "delta") %>% 
+             st_cast("LINESTRING")) %>% 
+    ggplot() +
+    geom_sf(aes(color = dataset)) +
+    theme_minimal(base_size = 19) +
+    theme(legend.position = "bottom")} *
+  {bind_rows(shapefiles$DLISLevees %>% 
+               mutate(dataset = "levees"),
+             shapefiles$deltaTidal %>% 
+               mutate(dataset = "delta") %>% 
+               st_cast("MULTILINESTRING")) %>% 
+      ggplot() +
+      geom_sf(aes(color = dataset)) +
+      theme_minimal(base_size = 19) +
+      theme(legend.position = "bottom")}
+```
+
+# Fixed levee polygons against Legal and functional Delta
+```{r}
+{bind_rows(shapefiles$levees %>% 
+             filter(LMA %in% {polygonDF %>% 
+                 filter(st_is_empty(.)) %>% 
+                 pull(LMA)}) %>% 
+             mutate(dataset = "leftover"),
+           polygonDF %>% 
+             filter(!st_is_empty(.)) %>% 
+             mutate(dataset = "levees"),
+           shapefiles$deltaLegal %>% 
+             mutate(dataset = "delta") %>% 
+             st_cast("LINESTRING")) %>% 
+    ggplot() +
+    geom_sf(aes(color = dataset)) +
+    theme_minimal() +
+    labs(title = "Fixed polygons, Legal Delta") +
+    theme(legend.position = "bottom")} *
+  {bind_rows(shapefiles$levees %>% 
+               filter(LMA %in% {polygonDF %>% 
+                   filter(st_is_empty(.)) %>% 
+                   pull(LMA)}) %>% 
+               mutate(dataset = "leftover"),
+             polygonDF %>% 
+               filter(!st_is_empty(.)) %>% 
+               mutate(dataset = "levees"),
+             shapefiles$deltaTidal %>% 
+               mutate(dataset = "delta") %>% 
+               st_cast("LINESTRING")) %>% 
+      ggplot() +
+      geom_sf(aes(color = dataset)) +
+      theme_minimal() +
+      labs(title = "Fixed polygons, Functional Delta") +
+      theme(legend.position = "bottom")}
+```
+
+# Polygons from saved RData file vs shape file
+```{r}
+{polygonDF %>% 
+    ggplot(aes(fill = LMA)) +
+    geom_sf() +
+    theme_minimal(base_size = 19) +
+    labs(title = "From RData") +
+    theme(legend.position = "none")} * 
+    {st_read(file.path("..", "data", "shapefiles", "fixedLevees", "fixedLevees.shp")) %>% 
+            ggplot(aes(fill = LMA)) +
+            geom_sf() +
+            theme_minimal(base_size = 19) +
+            labs(title = "From shapefile") +
+            theme(legend.position = "none")}
+```
+
