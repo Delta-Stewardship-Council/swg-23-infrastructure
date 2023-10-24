@@ -183,57 +183,56 @@ shapefiles$speciesRichness <- st_read("C:\\Users\\TXNguyen\\Documents\\GitHub\\s
 # Have to download delta levee shape files
 # "https://gis.data.ca.gov/datasets/7995cfe94bcc4e15afe92f40efb66cc6_0/explore"
 
-shapefiles$levees <- st_read(file.path("data-raw", "shapefiles", "deltaLeveeAreas", 
-                                       "i17_Delta_Levees_Centerlines_2017.shp")) %>%
-  st_transform(crs = 3310)
-
-area$levees <- lapply(na.omit(unique(shapefiles$levees$LMA)),
-                      function(x) {
-                        polygon <- shapefiles$levees %>% 
-                          filter(LMA == x) %>% 
-                          st_union() %>% 
-                          st_polygonize()
-                        
-                        area <- polygon %>% 
-                          st_area() %>% 
-                          units::set_units(acre) %>% 
-                          as.numeric()
-                        
-                        if (area == 0) {
-                          p = NULL
-                        } else {
-                          p <- ggplot() +
-                            geom_sf(data = polygon, fill = "lightblue") +
-                            labs(title = x, subtitle = paste0("Acres: ", area)) +
-                            theme_minimal()
-                        }
-                        
-                        df <- tibble(LMA = x,
-                                     acres = area)
-                        
-                        list(df = df,
-                             polygon = polygon,
-                             p = p)
-                      }) %>% 
-  setNames(na.omit(unique(shapefiles$levees$LMA)))
-
-area$leveesDF <- lapply(area$levees, "[[", 1) %>% 
-  bind_rows() %>% 
-  arrange(-acres) %>% 
-  mutate(LMA = tolower(LMA)) %>% 
-  full_join(read.csv(file.path("data-raw", "csvFiles", "DLIS.IslandBasics.csv"), check.names = F) %>% 
-              transmute(LMA = tolower(`Field Name`),
-                        acresDLIS = `Area (acres)`,
-                        priorityIsland = `Priority Island`,
-                        leveed = Leveed,
-                        active = `Active for DLIS`),
-            by = "LMA") %>% 
-  mutate(difference = acres - acresDLIS)
-
-# Loading in the DLIS islands shape file to compare areas highlighted
-shapefiles$DLISLevees <- st_read(file.path("data-raw", "shapefiles", "RevisedIslands_160912_AllIslands", 
-                                           "RevisedIslands_160912_AllIslands.shp"))
-
+# shapefiles$levees <- st_read(file.path("data-raw", "shapefiles", "deltaLeveeAreas", 
+#                                        "i17_Delta_Levees_Centerlines_2017.shp")) %>%
+#   st_transform(crs = 3310)
+# 
+# area$levees <- lapply(na.omit(unique(shapefiles$levees$LMA)),
+#                       function(x) {
+#                         polygon <- shapefiles$levees %>% 
+#                           filter(LMA == x) %>% 
+#                           st_union() %>% 
+#                           st_polygonize()
+#                         
+#                         area <- polygon %>% 
+#                           st_area() %>% 
+#                           units::set_units(acre) %>% 
+#                           as.numeric()
+#                         
+#                         if (area == 0) {
+#                           p = NULL
+#                         } else {
+#                           p <- ggplot() +
+#                             geom_sf(data = polygon, fill = "lightblue") +
+#                             labs(title = x, subtitle = paste0("Acres: ", area)) +
+#                             theme_minimal()
+#                         }
+#                         
+#                         df <- tibble(LMA = x,
+#                                      acres = area)
+#                         
+#                         list(df = df,
+#                              polygon = polygon,
+#                              p = p)
+#                       }) %>% 
+#   setNames(na.omit(unique(shapefiles$levees$LMA)))
+# 
+# area$leveesDF <- lapply(area$levees, "[[", 1) %>% 
+#   bind_rows() %>% 
+#   arrange(-acres) %>% 
+#   mutate(LMA = tolower(LMA)) %>% 
+#   full_join(read.csv(file.path("data-raw", "csvFiles", "DLIS.IslandBasics.csv"), check.names = F) %>% 
+#               transmute(LMA = tolower(`Field Name`),
+#                         acresDLIS = `Area (acres)`,
+#                         priorityIsland = `Priority Island`,
+#                         leveed = Leveed,
+#                         active = `Active for DLIS`),
+#             by = "LMA") %>% 
+#   mutate(difference = acres - acresDLIS)
+# 
+# # Loading in the DLIS islands shape file to compare areas highlighted
+# shapefiles$DLISLevees <- st_read(file.path("data-raw", "shapefiles", "RevisedIslands_160912_AllIslands", 
+#                                            "RevisedIslands_160912_AllIslands.shp"))
 
 # i03 Suisun Marsh --------------------------------------------------------
 
