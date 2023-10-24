@@ -61,22 +61,88 @@ polygons$leveesAll <- lapply(na.omit(unique(shapefiles$levees$LMA)),
                       }) %>% 
   setNames(na.omit(unique(shapefiles$levees$LMA)))
 
-areas$RANDModel <- lapply(polygons$levees, "[[", 1) %>% 
-  bind_rows() %>% 
-  arrange(-acres) %>% 
-  mutate(LMA = tolower(LMA)) %>% 
-  full_join(read.csv(file.path("data-raw", "csvFiles", "DLIS.IslandBasics.csv"), check.names = F) %>% 
-              transmute(LMA = tolower(`Field Name`),
-                        acresDLIS = `Area (acres)`,
-                        priorityIsland = `Priority Island`,
-                        leveed = Leveed,
-                        active = `Active for DLIS`),
-            by = "LMA") %>% 
-  mutate(difference = acres - acresDLIS)
+# areas$RANDModel <- lapply(polygons$levees, "[[", 1) %>% 
+#   bind_rows() %>% 
+#   arrange(-acres) %>% 
+#   mutate(LMA = tolower(LMA)) %>% 
+#   full_join(read.csv(file.path("data-raw", "csvFiles", "DLIS.IslandBasics.csv"), check.names = F) %>% 
+#               transmute(LMA = tolower(`Field Name`),
+#                         acresDLIS = `Area (acres)`,
+#                         priorityIsland = `Priority Island`,
+#                         leveed = Leveed,
+#                         active = `Active for DLIS`),
+#             by = "LMA") %>% 
+#   mutate(difference = acres - acresDLIS)
 
 # Loading in the DLIS islands shape file to compare areas highlighted
 shapefiles$DLISLevees <- st_read(file.path("data-raw", "shapefiles", "RevisedIslands_160912_AllIslands", 
                                            "RevisedIslands_160912_AllIslands.shp"))
+
+# Rule 1b: shared levee lines ---------------------------------------------
+sharedLevee <- list()
+
+# Tyler Island
+sharedLevee$`Tyler Island` <- data.frame(LMA = "Tyler Island",
+                                         sharedLevees(
+  "Tyler Island", c(414, 415, 417)
+))
+
+# Jones Tract
+sharedLevee$`Jones Tract` <- data.frame(LMA = "Jones Tract",
+                                        st_intersection(
+  sharedLevees("lower jones tract",
+               c(filter(shapefiles$levees, LMA == "Upper Jones Tract") %>%
+                   pull(OBJECTID),
+                 255)),
+  st_as_sfc(st_bbox(snapCenterlines(filter(shapefiles$levees,
+                                           LMA %in% c("Lower Jones Tract", "Upper Jones Tract")),
+                                    10), crs = 3310))
+))
+
+# Roberts Island
+sharedLevee$`Roberts Island` <- data.frame(LMA = "Roberts Island",
+                                           shapefiles$levees %>% 
+  filter(LMA %in% c("Middle Roberts Island", "Upper Roberts Island") |
+           OBJECTID %in% c(256)) %>% 
+  bind_rows(shapefiles$levees %>% 
+              filter(OBJECTID == 255) %>% 
+              st_cast("LINESTRING") %>% 
+              # Plot this if you're curious if this is the right line or not
+              .[10, ] %>% 
+              lwgeom::st_linesubstring(0, 0.1)) %>% 
+  st_union() %>% 
+  st_polygonize())
+
+# Wright-Elmwood Tract
+sharedLevee$`Wright-Elmwood Tract` <- data.frame(LMA = "Wright-Elmwood Tract",
+                                                 sharedLevees("wright-elmwood tract", c(341, 342)))
+
+# Little Egbert Island
+sharedLevee$`Little Egbert Island` <- data.frame(LMA = "Little Egbert Island",
+                                                 sharedLevees("little egbert island", 193))
+
+# Prospect Island
+sharedLevee$`Prospect Island` <- data.frame(LMA = "Prospect Island",
+                                            sharedLevees("prospect island",
+                                              c(473, 474, 283, 58)))
+
+polygons$rule1b <- bind_rows(
+  lapply(polygons$leveesAll, function(x) {
+    if (is.null(x$p)) {
+      data.frame(LMA = x$df$LMA)
+    } else {
+      data.frame(LMA = x$df$LMA,
+                 x$polygon)
+    }
+  }) %>% 
+    bind_rows() %>% 
+    mutate(dataset = "dwrCenterlines") %>% 
+    st_sf(),
+  bind_rows(sharedLevee) %>% 
+    mutate(dataset = "sharedLevee"))
+
+ggplot(polygons$rule1b, aes(fill = dataset)) +
+  geom_sf()
 
 # Rule 2 Suisun Marsh integration -----------------------------------------
 
