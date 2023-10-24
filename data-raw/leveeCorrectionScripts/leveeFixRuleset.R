@@ -154,35 +154,26 @@ polygons$`Suisun Marsh` <- st_read(file.path("data-raw", "shapefiles", "suisunMa
   data.frame(LMA = "Suisun Marsh", .)
 
 polygons$ruleTwo <- bind_rows(
-  lapply(polygons$leveesAll, function(x) {
-    if (is.null(x$p)) {
-      data.frame(LMA = x$df$LMA)
-    } else {
-      data.frame(LMA = x$df$LMA,
-                 x$polygon)
-    }
-  }) %>% 
-    bind_rows() %>% 
-    mutate(name = "dwrCenterlines") %>% 
-    st_sf(),
+  polygons$rule1b,
   polygons$`Suisun Marsh` %>% 
-    mutate(name = "suisunMarsh")
+    mutate(dataset = "suisunMarsh")
 )
+
+ggplot(polygons$ruleTwo, aes(fill = dataset)) +
+  geom_sf()
 
 # Rule 3: NLD centerline --------------------------------------------------
 
 polygons$nld <- st_read(file.path("data-raw", "shapefiles", "nationalLeveeDatabase", "systemLines", "POLYLINE.shp")) %>% 
   st_transform(crs = 3310) %>% 
-  mutate(name = "nld")
+  mutate(dataset = "nld")
 
 polygons$ruleTwo %>% 
-  ggplot(aes(fill = LMA)) +
-  geom_sf(show.legend = F)
-
-mapview(polygons$nld %>% 
-          bind_rows(polygons$ruleTwo %>%
-                      st_cast("MULTILINESTRING")), 
-        zcol = "name", legend = F)
-  
-
-mapview(polygons$nld, zcol = "name")
+  st_cast("MULTILINESTRING") %>% 
+  bind_rows(shapefiles$levees %>% 
+              mutate(lines = "centerLine"),
+            st_intersection(st_as_sfc(st_bbox(shapefiles$levees)), 
+                            polygons$nld) %>% 
+              st_sf() %>% 
+              mutate(lines = "nld")) %>% 
+  mapview(zcol = "lines")
