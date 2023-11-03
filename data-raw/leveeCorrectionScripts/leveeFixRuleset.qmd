@@ -1,0 +1,122 @@
+---
+title: "Creating levee polygons"
+author: "TXN"
+date: "`r format(Sys.time(), '%d %B %Y')`"
+format: 
+  html:
+    embed-resources: true
+---
+
+```{r, message=F, results='hide'}
+library(dplyr)
+library(ggplot2)
+library(plotly)
+library(sf)
+
+# The created shapefile:
+leveePolygons <- st_read(file.path("..", "..", "data", "shapefiles", "fixedLevees", 
+                                   "leveedAreas.shp"))
+# Tidally influenced Delta boundary
+deltaBoundary <- st_read(file.path("..", "shapefiles", "deltaBoundary",
+                                   "SacSJ_TidallyInfluencedBoundary", 
+                                   "Tidally_Influenced_Delta_SacSJ.shp")) %>% 
+  st_transform(crs = 3310)
+```
+
+
+```{r setup, include=FALSE}
+options(scipen = 9999999, width = 80)
+theme_set(theme_minimal())
+knitr::opts_chunk$set(dpi=320, width = 150, fig.width=16, fig.height=11, warning=FALSE, message=F, dev.args = list(type = "cairo-png", pointsize = 13), echo = F)
+```
+
+# Purpose
+
+This script documents the logic and steps governing the creation of the leveed area polygons for our NCEAS project.
+
+The motivation of this effort was to create polygons that describes leveed areas programatically in R. This allows us to be transparent in our decision making  and allows others to readily reproduce our work, aspects of the RAND that we wished to imrpove. To make this happen, we developed a ruleset to create our polygons. Each rule is sequential creating a layer on top of the layer before it. 
+
+# Ruleset
+
+The rules below are used in sequential order to create our polygons:
+
+1. Polygonize the centerlines taken from DWR's 2017 levee centerline shapefile
+2. Incorporate the Suisun Marsh area shapefile
+3. Incorporate the National Levee Dataset levee centerline shapefile, filling out remaining polygons as applicable
+4. Incorporate the tidally-influenced Delta shapefile, using this as an outer boundary to create our bordering polygons.
+
+# Software
+
+All work was done in R, version 4.1.3. The `sf`, version 1.0-14, package was used to work with and manipulate the shapefiles.
+
+# Methods
+
+## Rule 1: polygonize the centerlines from DWR's 2017 levee centerline shapefile
+
+The shapefile can be downloaded from the [state geoportal website](https://gis.data.ca.gov/datasets/7995cfe94bcc4e15afe92f40efb66cc6_0/about). The file is read in via `st_read()` and reprojected into the California Albers projection via `st_transform`. A set of levees belonging to an area is described by the `LMA` column within the shapefile. The shapefile was filtered for each unique LMA and those centerlines were used to create the polygon for that area using the `st_polygonize` function of the `sf` package. 
+
+Some leveed areas were not described completely by the LMA label. In these cases, we used the RAND model as a visual guide. This ruleset produces the following polygons:
+
+```{r}
+ggplotly(leveePolygons %>%
+           filter(!st_is_empty(geometry),
+                  ruleset == "one") %>%
+           st_cast("MULTIPOLYGON") %>% 
+           bind_rows(mutate(deltaBoundary, LMA = "tidallyDelta") %>% 
+                       st_cast("LINESTRING")) %>% 
+           ggplot(aes(fill = LMA)) +
+           geom_sf() +
+           labs(title = "Rule One") +
+           theme(legend.position = "none"))
+```
+
+## Rule 2: Incorporate the Suisun Marsh shapefile
+
+The shapefile can be downloaded from the [state geoportal website](https://gis.data.ca.gov/datasets/643785963c664e48a8fba3f0e1506160_0/about) and is read into R as is. The file is read in via `st_read()` and reprojected into the California Albers projection via `st_transform`. The "Primary (Water)" layer was removed from the polygon and given an LMA label of `Suisun Marsh`.
+
+```{r}
+ggplotly(leveePolygons %>%
+           filter(!st_is_empty(geometry),
+                  ruleset %in% c("one", "two")) %>%
+           st_cast("MULTIPOLYGON") %>%
+           bind_rows(mutate(deltaBoundary, LMA = "tidallyDelta") %>%
+                       st_cast("LINESTRING")) %>%
+           ggplot(aes(fill = LMA)) +
+           geom_sf() +
+           labs(title = "Rule Two") +
+           theme(legend.position = "none"))
+```
+
+## Rule 3: Incorporating the National Levee Database shapefile
+
+This step is currently in progress.
+
+The dataset must be downloaded manually from the [National Levee Database](https://levees.sec.usace.army.mil/#/) with the geography filter for the state of California. This shapefile was downloaded by Trinh Nguyen on October 24, 2023.
+
+## Rule 4: tidally-influenced Delta and boundary polygons
+
+The tidally-influenced Delta shapefile was taken from the team's SharePoint. It needs to be documented where this file was downloaded from. This shapefile is likely taken from [SFEI](https://www.sfei.org/content/delta-historical-ecology-gis-data).
+
+Border polygons were created by connecting levee centerlines from DWR's and the National Levee Database shapefiles to the tidally-influenced Delta boundary. Applicable levee segments closest to the boundary were used. This step involves subjectivity in determining which levee segments should be used to connect to the boundary. Although the RAND polygons were used as a guide, we only followed them loosely. This is due to the sparse documentation by the RAND model on how to replicate their bordering polygons and our decision to use the tidally-influenced Delta instead of the Legal Delta like the RAND.
+
+There are two methods in connecting the levee segments to the boundary. First, if a levee segment intersects with the boundary, this connection was used. If there is no intersection, then a straight line was drawn from the end of the levee segment to the closest location of the boundary possible using `st_nearest_points()`. The boundary is the outtermost limit for all created polygons except polygon `NCEAS1` of which the northernmost border is determined by the levee `MA 09 - City of Sacramento - American R left bank` from the National Levee Dataset. All polygon were finalized by connecting any gaps within the levee segments, e.g., levee breaks, and gaps between levee segments. A critical difference between this fourth rule and the previous steps is that segments are drawn where levees are not recorded to exist to complete the polygons. This step created a total of 31 polygons.
+
+```{r}
+ggplotly(
+  leveePolygons %>%
+  filter(!st_is_empty(geometry)) %>%
+  st_cast("MULTIPOLYGON") %>%
+  mutate(color = "leveedAreas") %>%
+  bind_rows(mutate(deltaBoundary,
+                   LMA = "tidallyDelta",
+                   color = "boundary") %>%
+              st_cast("LINESTRING")) %>%
+  ggplot(aes(fill = LMA, color = color)) +
+  geom_sf() +
+  labs(title = "Rule Four") +
+  scale_color_manual(values = c("leveedAreas" = "gray30", "boundary" = "red")) +
+  theme(legend.position = "none")
+)
+```
+
+

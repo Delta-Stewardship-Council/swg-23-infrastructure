@@ -5,6 +5,7 @@ library(mapview)
 library(sf)
 library(ggplot2)
 library(dplyr)
+library(leaflet)
 
 # Ruleset:
 
@@ -12,8 +13,8 @@ library(dplyr)
 # 1b. shared levee lines
 # 2. Integrate the suisun marsh dataset
 # 3. NLD centerline shapefile, use these additional centerlines to complete uncompleted areas
-# 4. Integrate the Delta border, tidally influenced version for now
-# 5. Find shortest distance of the outlying incomplete polygons to the border
+# 4. Integrate the Delta border, tidally influenced version for now, and find
+# shortest distance of bordering incomplete polygons to the border
 
 #### IMPORTANT ####
 # Make sure you run through at least these two sections in "ecologicalAssets.R":
@@ -146,7 +147,7 @@ ggplot(polygons$rule1b, aes(fill = dataset)) +
 
 # Rule 2 Suisun Marsh integration -----------------------------------------
 
-polygons$`Suisun Marsh` <- st_read(file.path("data-raw", "shapefiles", "suisunMarsh", "i03_SuisunMarshBoundary.shp")) %>% 
+shapefiles$`Suisun Marsh` <- st_read(file.path("data-raw", "shapefiles", "suisunMarsh", "i03_SuisunMarshBoundary.shp")) %>% 
   st_transform(crs = 3310) %>% 
   filter(LOCATION != "Primary (Water)") %>% 
   mutate(LMA = "Suisun Marsh") %>% 
@@ -155,7 +156,7 @@ polygons$`Suisun Marsh` <- st_read(file.path("data-raw", "shapefiles", "suisunMa
 
 polygons$ruleTwo <- bind_rows(
   polygons$rule1b,
-  polygons$`Suisun Marsh` %>% 
+  shapefiles$`Suisun Marsh` %>% 
     mutate(dataset = "suisunMarsh")
 )
 
@@ -164,16 +165,132 @@ ggplot(polygons$ruleTwo, aes(fill = dataset)) +
 
 # Rule 3: NLD centerline --------------------------------------------------
 
-polygons$nld <- st_read(file.path("data-raw", "shapefiles", "nationalLeveeDatabase", "systemLines", "POLYLINE.shp")) %>% 
+shapefiles$nld <- st_read(file.path("data-raw", "shapefiles", "nationalLeveeDatabase", "systemLines", "POLYLINE.shp")) %>% 
   st_transform(crs = 3310) %>% 
   mutate(dataset = "nld")
 
-polygons$ruleTwo %>% 
-  st_cast("MULTILINESTRING") %>% 
-  bind_rows(shapefiles$levees %>% 
-              mutate(lines = "centerLine"),
-            st_intersection(st_as_sfc(st_bbox(shapefiles$levees)), 
-                            polygons$nld) %>% 
-              st_sf() %>% 
-              mutate(lines = "nld")) %>% 
-  mapview(zcol = "lines")
+# polygons$ruleTwo %>% 
+#   st_cast("MULTILINESTRING") %>% 
+#   bind_rows(shapefiles$levees %>% 
+#               mutate(lines = "centerLine"),
+#             st_intersection(st_as_sfc(st_bbox(shapefiles$levees)), 
+#                             shapefiles$nld) %>% 
+#               st_sf() %>% 
+#               mutate(lines = "nld")) %>% 
+#   mapview(zcol = "lines")
+
+# Rule 4: Shortest distance to the functional Delta -----------------------
+
+shapefiles$functionalDelta <- st_read(file.path("data-raw", "shapefiles", "deltaBoundary", 
+                                              "SacSJ_TidallyInfluencedBoundary", "Tidally_Influenced_Delta_SacSJ.shp")) %>% 
+  st_transform(crs = 3310)
+
+# Steps: 
+# 1: join the boundary file
+# 2: identify the applicable lines
+# 3: st_boundary to find the end points
+# 4: find shortest distance to the boundary
+
+# Joining the boundary file
+pal <- colorFactor("inferno", domain = polygons$ruleTwo$LMA)
+
+leaflet() %>% 
+  addPolygons(
+    data = polygons$ruleTwo %>% 
+      st_cast("POLYGON") %>% 
+      st_transform(4326),
+    stroke = F,
+    fillColor = ~pal(LMA),
+    fillOpacity = 0.55, smoothFactor = 0.5,
+    popup = paste0(polygons$ruleTwo$LMA)
+  ) %>% 
+  # addPolylines(
+  #   data = shapefiles$DLISLevees %>% 
+  #     st_cast("MULTILINESTRING") %>% 
+  #     st_transform(4326),
+  #   weight = 2, color = "black"
+  # ) %>% 
+  addPolylines(
+    data = shapefiles$nld %>% 
+      st_transform(4326),
+    weight = 6, color = "black",
+    popup = paste0(shapefiles$nld$name),
+    highlightOptions = highlightOptions(color = "white", bringToFront = TRUE)
+  ) %>% 
+  addPolylines(
+    data = shapefiles$levees %>% 
+      st_transform(4326),
+    weight = 6, color = "blue"
+  ) %>% 
+  addPolylines(
+    data = shapefiles$functionalDelta %>% 
+                       mutate(dataset = "functionalDelta") %>% 
+      st_transform(4326),
+    weight = 6, color = "firebrick"
+  ) %>% 
+  addProviderTiles("Esri.WorldImagery")
+
+# Starting from the top, immediately east of west sacramento and creating the border
+# nearest to the functional border
+
+source(file.path("data-raw", "leveeCorrectionScripts", "boundaryPolygons.R"))
+
+polygons$rule4 <- bind_rows(
+  polygons$ruleTwo,
+  nceas
+)
+
+# Saving the shapefile ----------------------------------------------------
+
+bind_rows(
+  polygons$rule1b %>% 
+    mutate(ruleset = "one"),
+  shapefiles$`Suisun Marsh` %>% 
+    mutate(dataset = "dwrSuisunMarsh",
+           ruleset = "two"),
+  bind_rows(nceas) %>% 
+    mutate(ruleset = "four")
+) %>% {
+  # Some duplicated LMAs due to failed polygonize on original centerline dataset
+  # here, fixed in rule 1b
+  duplicatedLMAs <- janitor::get_dupes(., "LMA") %>% 
+    filter(dataset == "sharedLevee")
+  
+  filter(., !LMA %in% unique(duplicatedLMAs$LMA)) %>% 
+    bind_rows(duplicatedLMAs)
+} %>% 
+  split(.$LMA) %>% 
+  {
+  st_write(
+    lapply(., function(x) {
+      if (!is.null(x$geometry)) {
+        if (any(st_geometry_type(x$geometry) == "GEOMETRYCOLLECTION")) {
+          data.frame(LMA = x$LMA,
+                     dataset = x$dataset,
+                     ruleset = x$ruleset,
+                     x$geometry %>% 
+                       .[[1]] %>% 
+                       st_multipolygon() %>% 
+                       st_sfc(crs = 3310))
+        } else {
+          data.frame(LMA = x$LMA,
+                     dataset = x$dataset,
+                     ruleset = x$ruleset,
+                     x$geometry %>% 
+                       st_cast("MULTIPOLYGON") %>% 
+                       .[[1]] %>% 
+                       st_multipolygon() %>% 
+                       st_sfc(crs = 3310))
+        }
+      } else {
+        data.frame(LMA = x$LMA,
+                   dataset = x$dataset,
+                   ruleset = x$ruleset,
+                   st_sfc(st_multipolygon(list()), crs = 3310))
+      }
+    }) %>% 
+      bind_rows(), 
+    file.path("data", "shapefiles", "fixedLevees", "leveedAreas.shp"), 
+    append = F
+  )
+}

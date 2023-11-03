@@ -208,3 +208,165 @@ drawLine <- function(x, y, xPosition = NULL, yPosition = NULL, returnPoints = F)
     st_sfc(crs = 3310) %>% 
     st_sf()
 }
+
+
+#' Plotting a section of a shapefile
+#'
+#' @param start Start of the line, 0-1 
+#' @param end End of the line, 0-1
+#' @param shp The shapefile, defaults to the functional Delta boundary
+#' @param returnPlot T/F, if T, will return a plot while F will return the dataset
+#'
+#' @return
+#' @export
+#'
+#' @examples 
+plotSectionBoundary <- function(start, end, shp = shapefiles$functionalDelta, returnPlot = T) {
+  linstringDelta <- shp %>% 
+    st_cast("LINESTRING")
+  
+  df <- bind_rows(
+    linstringDelta %>% 
+      mutate(state = "boundary"),
+    linstringDelta %>% 
+      lwgeom::st_linesubstring(start, end) %>% 
+      mutate(state = "selected")
+  )
+  
+  if (returnPlot) {
+    return({
+      ggplot(df, aes(color = state)) +
+        geom_sf()
+    })
+  } else {
+    df %>% 
+      filter(state == "selected")
+  }
+}
+
+
+#' Draw a closest line between a point and a line
+#'
+#' @param startingLine Line to find the point to connect FROM
+#' @param toLine Line to connect the point TO
+#' @param positionIndex Which point to use from the starting line
+#' @param check T/F, if a plot should be generated of the generated line.
+#'
+#' @return
+#' @export
+#'
+#' @examples
+closestLine <- function(startingLine, toLine, positionIndex = NULL, check = F) {
+  xPoints <- st_boundary(startingLine) %>% 
+    st_cast("POINT")
+  
+  if (is.null(positionIndex)) {
+    return({
+      bind_rows(startingLine,
+                xPoints %>% 
+                  mutate(ID = factor(row_number()))) %>% 
+        ggplot() +
+        geom_sf(aes(color = ID))
+    })
+  }
+
+  pointInterest <- xPoints %>% 
+    filter(row_number() == positionIndex)
+  
+  finLine <- st_nearest_points(pointInterest,
+                               toLine)
+  if (check) {
+    return({
+      bind_rows(startingLine,
+                pointInterest,
+                toLine,
+                finLine %>% 
+                  st_sf() %>% 
+                  mutate(desiredLine = T)) %>% 
+        ggplot(aes(color = desiredLine)) +
+        geom_sf()
+    })
+  }
+  finLine %>% 
+    st_sf()
+}
+
+#' Plot a set of LINESTRING in leaflet
+#'
+#' @details
+#' Meant to help explore where gaps might exist
+#' 
+#' @param x An sf object
+#'
+#' @return
+#' @export
+#'
+#' @examples
+plotLinesLeaflet <- function(x) {
+  if (is.null(x$label)) {
+    if (is.null(x$name)) {
+      x <- mutate(x, label = paste0("centerline_", OBJECTID))
+    } else {
+      x <- mutate(x, label = ifelse(is.na(name), paste0("centerline_", OBJECTID), name))
+    }
+  }
+  
+  if (!is.null(x$ID)) {
+    x <- mutate(x, label = paste0(label, "_id", ID))
+  }
+  
+  linesMapData <- x %>% 
+    st_transform(4326)
+  
+  pal <- colorFactor("inferno", domain = linesMapData$label)
+
+  leaflet() %>% 
+    addPolylines(
+      data = linesMapData, opacity = 1,
+      weight = 10, color = ~pal(label),
+      popup = paste0(linesMapData$label)
+    ) %>% 
+    addProviderTiles("Esri.WorldImagery")
+}
+
+# These two functions are taken directly from:
+# https://github.com/Jean-Romain/ALSroads
+# Can download the package once I look closer at the other functions
+# For now, was taken from SO question
+
+st_ends_heading <- function(line)
+{
+  M <- sf::st_coordinates(line)
+  i <- c(2, nrow(M) - 1)
+  j <- c(1, -1)
+  
+  headings <- mapply(i, j, FUN = function(i, j) {
+    Ax <- M[i-j,1]
+    Ay <- M[i-j,2]
+    Bx <- M[i,1]
+    By <- M[i,2]
+    unname(atan2(Ay-By, Ax-Bx))
+  })
+  
+  return(headings)
+}
+
+st_extend_line <- function(line, distance, end = "BOTH")
+{
+  if (!(end %in% c("BOTH", "HEAD", "TAIL")) | length(end) != 1) stop("'end' must be 'BOTH', 'HEAD' or 'TAIL'")
+  
+  M <- sf::st_coordinates(line)[,1:2]
+  keep <- !(end == c("TAIL", "HEAD"))
+  
+  ends <- c(1, nrow(M))[keep]
+  headings <- st_ends_heading(line)[keep]
+  distances <- if (length(distance) == 1) rep(distance, 2) else rev(distance[1:2])
+  
+  M[ends,] <- M[ends,] + distances[keep] * c(cos(headings), sin(headings))
+  newline <- sf::st_linestring(M)
+  
+  # If input is sfc_LINESTRING and not sfg_LINESTRING
+  if (is.list(line)) newline <- sf::st_sfc(newline, crs = sf::st_crs(line))
+  
+  return(newline)
+}
