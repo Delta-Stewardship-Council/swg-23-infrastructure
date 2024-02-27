@@ -289,7 +289,8 @@ bind_rows(
                    st_sfc(st_multipolygon(list()), crs = 3310))
       }
     }) %>% 
-      bind_rows(), 
+      bind_rows() %>% 
+      mutate(geometry = st_make_valid(geometry)), 
     file.path("data", "shapefiles", "fixedLevees", "leveedAreas.shp"), 
     append = F
   )

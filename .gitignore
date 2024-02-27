@@ -58,3 +58,51 @@ data-raw/shapefiles/subsidenceGDB
 *.html
 doc/workflow_files/
 data/fixedLevees_101823.RData
+data-raw/randModel/bin/Functions-Ancillary.r
+data-raw/randModel/bin/Functions-Calculations.r
+data-raw/randModel/bin/Functions-Post_AD_Load.r
+data-raw/randModel/core/dm0.r
+data-raw/randModel/core/do.Extract.r
+data-raw/randModel/core/doModels.r
+data-raw/randModel/core/exec.ParRuns.r
+data-raw/randModel/DeltaEstimator.r
+data-raw/randModel/DriverDeltaSuisun.accdb
+data-raw/randModel/out/DLIS.BaselineCompMetrics.csv
+data-raw/randModel/out/DLIS.DiscountRateKey.csv
+data-raw/randModel/out/DLIS.InvestmentKey.csv
+data-raw/randModel/out/DLIS.MAREADLong.csv
+data-raw/randModel/out/DLIS.MasterScenarioKey.csv
+data-raw/randModel/out/DLIS.MetricsAtRisk.csv
+data-raw/randModel/out/DLIS.MetricsAtRiskLong.csv
+data-raw/randModel/out/DLIS.ScenarioKey.csv
+data-raw/randModel/out/DLIS.StandardMetrics.csv
+data-raw/randModel/out/Notes.txt
+data-raw/randModel/out/Results with 1 core/DLIS.BaselineCompMetrics.csv
+data-raw/randModel/out/Results with 1 core/DLIS.DiscountRateKey.csv
+data-raw/randModel/out/Results with 1 core/DLIS.InvestmentKey.csv
+data-raw/randModel/out/Results with 1 core/DLIS.MAREADLong.csv
+data-raw/randModel/out/Results with 1 core/DLIS.MasterScenarioKey.csv
+data-raw/randModel/out/Results with 1 core/DLIS.MetricsAtRisk.csv
+data-raw/randModel/out/Results with 1 core/DLIS.ScenarioKey.csv
+data-raw/randModel/out/Results with 3 cores/DLIS.BaselineCompMetrics.csv
+data-raw/randModel/out/Results with 3 cores/DLIS.DiscountRateKey.csv
+data-raw/randModel/out/Results with 3 cores/DLIS.InvestmentKey.csv
+data-raw/randModel/out/Results with 3 cores/DLIS.MAREADLong.csv
+data-raw/randModel/out/Results with 3 cores/DLIS.MasterScenarioKey.csv
+data-raw/randModel/out/Results with 3 cores/DLIS.MetricsAtRisk.csv
+data-raw/randModel/out/Results with 3 cores/DLIS.ScenarioKey.csv
+data-raw/randModel/out/Results with 3 cores/DLIS.StandardMetrics.csv
+data-raw/randModel/ref/EAD_Asset_Names.dat
+data-raw/randModel/ref/Island_Leveed_Status.dat
+data-raw/randModel/ref/New folder/ScenarioData.dat
+data-raw/randModel/ref/ProportionWarned.dat
+data-raw/randModel/ref/ScenarioData.dat
+data-raw/shapefiles/managedWetlands/Modern_Habitat_LandExtend_2016.CPG
+data-raw/shapefiles/managedWetlands/Modern_Habitat_LandExtend_2016.dbf
+data-raw/shapefiles/managedWetlands/Modern_Habitat_LandExtend_2016.prj
+data-raw/shapefiles/managedWetlands/Modern_Habitat_LandExtend_2016.sbn
+data-raw/shapefiles/managedWetlands/Modern_Habitat_LandExtend_2016.sbx
+data-raw/shapefiles/managedWetlands/Modern_Habitat_LandExtend_2016.shp
+data-raw/shapefiles/managedWetlands/Modern_Habitat_LandExtend_2016.shp.xml
+data-raw/shapefiles/managedWetlands/Modern_Habitat_LandExtend_2016.shx
+data-raw/shapefiles/managedWetlands/PM_LandTyp.png
