@@ -27,81 +27,12 @@ leveedAreas <- st_read(file.path("data", "shapefiles", "fixedLevees", "leveedAre
 # the leveed area polygon. Currently the latter as it is logistically easier
 # across all datasets
 
-# Make valid before?
-leveedAreasFixed <- leveedAreas %>% 
-  mutate(geometry = st_make_valid(geometry))
-st_is_valid(leveedAreasFixed$geometry)
-
-# All levee areas works. Mainly used to check if all levee areas work. Faster 
-# to join the entire shape files than doing it per LMA
-# combinedFixed <- st_join(leveedAreasFixed, managedWetlands, join = st_overlaps)
-# # Can do it this way and is faster than the lapply below; however, cannot as 
-# # easily calculate the overlapped area in acres.
-
-# Calculate only the overlapping area
-combinedFixed <- lapply(unique(leveedAreasFixed$LMA),
-                        function(lma) {
-                          
-                          cat(lma, "\n")
-                          leveedArea <- filter(leveedAreasFixed, LMA == lma)
-                          if (st_is_empty(leveedArea$geometry)) {
-                            return(leveedArea)
-                          }
-                          
-                          tryCatch({
-                            joined <- st_join(leveedArea, managedWetlands, join = st_overlaps)
-                            
-                            joined %>% 
-                              mutate(overlappedGeometry = st_intersection(
-                                st_geometry(leveedArea),
-                                st_geometry(filter(managedWetlands, OBJECTID %in% unique(joined$OBJECTID)))
-                              ),
-                              overlappedArea = units::set_units(st_area(overlappedGeometry), 
-                                                                acre))
-                            
-                            # joinedArea <- lapply(split(joined, joined$PM_LandTyp),
-                            #                      function(x) {
-                            #                        browser()
-                            #                        area <- mutate(x, 
-                            #                                       overlappedGeometry = st_intersection(
-                            #                                         st_geometry(leveedArea),
-                            #                                         st_geometry(filter(managedWetlands, PM_LandTyp == unique(x$PM_LandTyp)))
-                            #                                       ),
-                            #                                       overlappedArea = units::set_units(st_area(overlappedGeometry), 
-                            #                                                                         acre))
-                            #                        p <- pivot_longer(area, c(geometry, overlappedGeometry), 
-                            #                                          names_to = "type", values_to = "geometry") %>% 
-                            #                          ggplot() +
-                            #                          geom_sf(aes(fill = type)) +
-                            #                          labs(title = unique(area$LMA),
-                            #                               subtitle = paste("Overlapped area:", round(area$overlappedArea, 2), "acres"))
-                            #                        list(area = area,
-                            #                             p = p)
-                            #                      })
-                          }, error = function(e) {
-                            e
-                          })
-                        }) %>% 
-  setNames(unique(leveedAreasFixed$LMA))
-
-
 # Calculating overlap and the area 3, 4 -----------------------------------
 
 intersectionDF <- st_intersection(leveedAreasFixed, managedWetlands) %>% 
   mutate(overlappedArea = units::set_units(st_area(intersectionDF), acre)) %>% 
   full_join(data.frame(leveedAreasArea) %>% 
               select(LMA, lmaGeometry = geometry, lmaArea), by = "LMA")
-
-# successfulFixed <- sapply(combinedFixed, function(x) {
-#   y <- class(x)
-#   ifelse(any(y == "error"), F, T)
-# })
-
-# # One didn't successfully finish:
-# names(successfulFixed)[which(!successfulFixed)]
-# # This is simply a line and is part of NCEAS6. Perhaps this is a part of Brack 
-# # Tract that has not yet been resolved, but shouldn't really be used
-# # Should be ok to remove for now but circle back to this
 
 # Checking the calculations -----------------------------------------------
 # Each calculated overlap should be:
