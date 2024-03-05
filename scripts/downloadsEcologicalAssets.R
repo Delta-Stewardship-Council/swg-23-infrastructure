@@ -110,7 +110,9 @@ downloadCNRA("https://data.cnra.ca.gov/dataset/gspar",
 # For now, download the csv file at:
 # https://gis.data.ca.gov/datasets/CDFW::statewide-terrestrial-native-species-richness-summary-ace-ds1332/about
 
-shapefiles$speciesRichness <- st_read("C:\\Users\\TXNguyen\\Documents\\GitHub\\swg-23-infrastructure\\data-raw\\shapefiles\\nativeSpeciesRichness\\Statewide_Terrestrial_Native_Species_Richness_Summary_-_ACE_[ds1332].shp") %>% 
+## Trinh's file path: "C:\\Users\\TXNguyen\\Documents\\GitHub\\swg-23-infrastructure\\data-raw\\shapefiles\\nativeSpeciesRichness\\Statewide_Terrestrial_Native_Species_Richness_Summary_-_ACE_[ds1332].shp")
+
+shapefiles$speciesRichness <- st_read("data-raw/shapefiles/nativeSpeciesRichness/Statewide_Terrestrial_Native_Species_Richness_Summary_-_ACE_[ds1332].shp") %>% 
   rename(
     ecoRegionNativeRank = NtvRankEco,
     ecoRegionNativeWeight = NtvSumEco,
