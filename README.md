@@ -60,6 +60,12 @@
 ```
 
 ### Download Data
+1. Make sure to have all Ecological Assets. Go to  `scripts` > `downloadsEcologicalAssets.R` and run script.
+2. Correct Levees shapefiles. Go to `scripts` > `leveeCorrectionsScripts` and run:
+- `leveeFixRules.R` --> explores the levee centerlines; creates `fixedLevees` > `leveedAreas.shp`
+- `leveeFix.R` --> explores the levee centerlines; creates `fixedLevees` > `fixedLevees.shp`
+- `boundaryPolygons.R`
+- `leafletPlot.R`
 
 ### Data Correction
 

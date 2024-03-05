@@ -233,7 +233,7 @@ leaflet() %>%
 # Starting from the top, immediately east of west sacramento and creating the border
 # nearest to the functional border
 
-source(file.path("data-raw", "leveeCorrectionScripts", "boundaryPolygons.R"))
+source(file.path("scripts", "leveeCorrectionScripts", "boundaryPolygons.R"))
 
 polygons$rule4 <- bind_rows(
   polygons$ruleTwo,
@@ -291,7 +291,7 @@ bind_rows(
     }) %>% 
       bind_rows() %>% 
       mutate(geometry = st_make_valid(geometry)), 
-    file.path("data", "shapefiles", "fixedLevees", "leveedAreas.shp"), 
+    file.path("data-clean", "shapefiles", "fixedLevees", "leveedAreas.shp"), 
     append = F
   )
 }

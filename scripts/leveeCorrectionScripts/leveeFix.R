@@ -1126,12 +1126,12 @@ st_write(
     }
   }) %>% 
     bind_rows(), 
-  file.path("data", "shapefiles", "fixedLevees", "fixedLevees.shp"), 
+  file.path("data-clean", "shapefiles", "fixedLevees", "fixedLevees.shp"), 
   append = F
 )
 
 # Saving RData
-save.image(file.path("data", paste0("fixedLevees_", format(Sys.Date(), "%m%d%y"), ".RData")))
+save.image(file.path("data-clean", paste0("fixedLevees_", format(Sys.Date(), "%m%d%y"), ".RData")))
 
 stop()
 
@@ -1239,7 +1239,7 @@ finalFigures <- list(
       theme_minimal(base_size = 19) +
       labs(title = "From RData") +
       theme(legend.position = "none")} * 
-    {st_read(file.path("data", "shapefiles", "fixedLevees", "fixedLevees.shp")) %>% 
+    {st_read(file.path("data-clean", "shapefiles", "fixedLevees", "fixedLevees.shp")) %>% 
         ggplot(aes(fill = LMA)) +
         geom_sf() +
         theme_minimal(base_size = 19) +
@@ -1259,7 +1259,7 @@ library(Cairo)
 # Loop through the list and save each plot
 
 for (i in seq_along(finalFigures)) {
-  CairoPNG(file = file.path("data", "figures", paste0(names(finalFigures)[i], ".png")), 
+  CairoPNG(file = file.path("figures", paste0(names(finalFigures)[i], ".png")), 
            width = 15, height = 10, units = "in", res = 300)
   print(finalFigures[[i]])
   dev.off()
