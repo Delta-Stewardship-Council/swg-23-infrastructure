@@ -57,7 +57,7 @@ data-raw/shapefiles/subsidenceGDB
 # HTML files
 *.html
 doc/workflow_files/
-data/fixedLevees_101823.RData
+data-clean/fixedLevees_101823.RData
 data-raw/randModel/bin/Functions-Ancillary.r
 data-raw/randModel/bin/Functions-Calculations.r
 data-raw/randModel/bin/Functions-Post_AD_Load.r
