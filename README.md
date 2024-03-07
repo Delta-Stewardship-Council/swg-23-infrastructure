@@ -59,18 +59,17 @@
 
 ```
 
-### Download Data
+### Download Data and Correct shapefiles
 1. Make sure to have all Ecological Assets. Go to  `scripts` > `downloadsEcologicalAssets.R` and run script.
 2. Correct Levees shapefiles. Go to `scripts` > `leveeCorrectionsScripts` and run:
 - `leveeFixRules.R` --> explores the levee centerlines; creates `fixedLevees` > `leveedAreas.shp`
 - `leveeFix.R` --> explores the levee centerlines; creates `fixedLevees` > `fixedLevees.shp`
-- `boundaryPolygons.R`
-- `leafletPlot.R`
+- `boundaryPolygons.R` --> Creates polygons on the boundary, rule 4: Shortest distance to the functional Delta. This file is sources in `leveeFixRuleset.R`. You need to run `leveeFixRuleset.R` to be able to source it.
+- `leafletPlot.R` --> Creates a leaflet map with fixed levees. To be used after running everything from leveeFix.R.
 
-### Data Correction
-
-### 
-
+### Overlapping Polygons
+1. `overlappingPolygonsExploration.R` --> exploration file on how to go about finding overlapping areas between two polygons.
+2. `manageWetlands.R` --> merges the Natural Habitat Managed Wetlands shapefile to leveed area polygons to find overlaping habitat types within each leveed area.
 
 
 

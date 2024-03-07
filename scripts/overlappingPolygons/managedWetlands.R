@@ -21,7 +21,7 @@ managedWetlands <- st_read(file.path("data-raw", "shapefiles", "managedWetlands"
                                      "Modern_Habitat_LandExtend_2016.shp")) %>% 
   st_transform(crs = 3310)
 
-leveedAreas <- st_read(file.path("data", "shapefiles", "fixedLevees", "leveedAreas.shp"))
+leveedAreas <- st_read(file.path("data-clean", "shapefiles", "fixedLevees", "leveedAreas.shp"))
 
 # Don't know if I should keep the projection from the managed wetlands or from
 # the leveed area polygon. Currently the latter as it is logistically easier
