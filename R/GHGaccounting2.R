@@ -51,15 +51,23 @@ canloc <- file.path(folder,"CCAP/ca_2021_ccap_v2_hires_canopy_draft_20240108.tif
 canopy <- rast(canloc)
 
 
-plot(canopy, reset = F)
+#plot(canopy, reset = F)
 
 ### Crop and mask by any polygon
+# convert tidal into a terra vector object
 tidal_bf <- vect(tidal)
+# plot the converted shapefile
 plot(tidal_bf)
 
-project(canopy , tidal_bf)
-raster_cp <- crop(canopy, tidal_bf, mask= T)
+# reproject tidal_bf with the same CRS as the canopy raster
+tidal_bf_reproj <- project(tidal_bf, crs(canopy))
+
+# crop canopy raster and then masking with our reprojected tidally influenced boundary
+# NOTE: takes a while to run
 # Note: if mask= F, the crop will be by extent (box) ###
+raster_cp <- crop(canopy, tidal_bf_reproj, mask= T)
+# plot the cropped canopy raster and check
+plot(raster_cp)
 
 r2 <- crop(canopy, extent(tidal))
 r3 <- mask(r2, tidal)
