@@ -88,6 +88,8 @@ c2001rcp <- crop(c2001r, tidal_tv_reproj, mask= T)
 plot(c2016rcp)
 plot(c2001rcp)
 
+# you can convert the raster object into a dataframe and access the values that way
+c2016rcp_df <- as.data.frame(c2016rcp)
 
 # Delta 2016 and Suisun 2015 mapping from DARI and BAARI
 # Read in SFEI Bay Area Aquatic Resources Inventory BAARI data from ESRI geodatabase file (.gdb) using this suggestion:
