@@ -16,6 +16,22 @@ library(terra)
 library(sf)
 library(ggplot2)
 
+#	Land use in early 2000s and present day (as represented by 2016) as follows. 
+# Two data sets were used: the NOAA C-CAP database (https://coast.noaa.gov/digitalcoast/data/ccapregional.html) 
+# for comparison with more detailed San Francisco Estuary Institute (SFEI) datasets 
+# based on the Bay Area Aquatic Resources Inventory (BAARI), Delta Aquatic Resources Inventory (DARI), 
+# and CDFW’s VegCAMP mapping. 
+
+# Details:
+# The 2001 C-CAP data sets were used to correspond to the 2002/2003 SFEI dataset 
+#   based on Delta 2002 and Suisun 2003 VegCAMP mapping,
+
+# The 2016 C-CAP data sets were used to correspond to the 2015/2016 SFEI dataset 
+#   based on Delta 2016 and Suisun 2015 mapping from DARI and BAARI
+
+
+
+
 # set to my directory for now
 folder <- "C:/Users/KAlstad/OneDrive - California Department of Fish and Wildlife/NCEAS_data"
 infra <- "C:/Users/KAlstad/Documents/Github_C/swg-23-infrastructure"
@@ -53,45 +69,47 @@ c2001r <- rast(caps2001)
 
 ### Crop and mask by any polygon
 # convert tidal into a terra vector object
-tidal_bf <- vect(tidal)
+tidal_tv <- vect(tidal)
 # plot the converted shapefile
-plot(tidal_bf)
+plot(tidal_tv)
 
-# reproject tidal_bf with the same CRS as the canopy raster
-#tidal_bf_reproj <- project(tidal_bf, crs(canopy))
-tidal_bf_reproj <- project(tidal_bf, crs(c2016r))
+# reproject tidal_tv with the same CRS as the canopy raster
+#tidal_tv_reproj <- project(tidal_tv, crs(canopy))
+tidal_tv_reproj <- project(tidal_tv, crs(c2016r))
 
 # crop canopy raster and then masking with our re-projected tidally influenced boundary
 # NOTE: takes a while to run
 # Note: if mask= F, the crop will be by extent (box) ###
 #raster_cp <- crop(canopy, tidal_bf_reproj, mask= T)
-c2016rcp <- crop(c2016r, tidal_bf_reproj, mask= T)
-c2001rcp <- crop(c2001r, tidal_bf_reproj, mask= T)
+c2016rcp <- crop(c2016r, tidal_tv_reproj, mask= T)
+c2001rcp <- crop(c2001r, tidal_tv_reproj, mask= T)
 # plot the cropped canopy raster and check
 #plot(raster_cp)
 plot(c2016rcp)
 plot(c2001rcp)
 
 
+# Delta 2016 and Suisun 2015 mapping from DARI and BAARI
 # Read in SFEI Bay Area Aquatic Resources Inventory BAARI data from ESRI geodatabase file (.gdb) using this suggestion:
 # https://gis.stackexchange.com/questions/184013/read-a-table-from-an-esri-file-geodatabase-gdb-using-r/271043#271043
 
 baariloc <- file.path(folder,"BAARI/BAARI_v2.1_final__SFEI_2017/BAARI_v2pt1__SFEI_2017.gdb")
 sf::st_layers(dsn = baariloc)
-BAARIbay <- sf::st_read(dsn = baariloc, layer= "BAARI_v2pt1_Baylands")
-# convert BAARIbay into a terra vector object
-BAARIbay_tv <- vect(BAARIbay)
-tidal_BAARI_r <- project(tidal_bf, crs(BAARIbay_tv))
+BAARIbay <- sf::st_read(dsn = baariloc, layer= "BAARI_v2pt1_Baylands")%>%
+  st_transform(st_crs(tidal_tv))
+crs(BAARIbay)
+crs(tidal)
+str(BAARIbay)
 
-BAARIbaycp <- crop(BAARIbay_tv, tidal_BAARI_r, mask= T)
-
-BAARIbaycp %>% 
+BAARIbay %>% 
   ggplot() +
   geom_sf()
 BAARIwet <- sf::st_read(dsn = baariloc, layer= "BAARI_v2pt1_Wetlands")
 BAARIwet %>% 
   ggplot() +
   geom_sf()
+
+# Error reading streams layer
 # BAARIstm <- sf::st_read(dsn = baariloc, layer= "BAARI_v2pt1_Streams")
 # BAARIstm %>% 
 #   ggplot() +
@@ -101,6 +119,8 @@ BAARIwet %>%
 # i Error occurred in the 1st layer.
 # Caused by error in `UseMethod()`:
 #   ! no applicable method for 'st_as_grob' applied to an object of class "c('XY', 'MULTICURVE', 'sfg')"
+
+
 
 # Read in SFEI Delta Aquatic Resources Inventory (DARI)
 dariloc <- file.path(folder,"DARIv1.1/DARIv1.1_SFEI_2022.gdb")
@@ -115,20 +135,53 @@ daristm %>%
   ggplot() +
   geom_sf()
 
-#	Land use in early 2000s and present day (as represented by 2016) as follows. 
-# Two data sets were used: the NOAA C-CAP database (https://coast.noaa.gov/digitalcoast/data/ccapregional.html) 
-# for comparison with more detailed San Francisco Estuary Institute (SFEI) datasets 
-# based on the Bay Area Aquatic Resources Inventory (BAARI), Delta Aquatic Resources Inventory (DARI), 
-# and CDFW’s VegCAMP mapping. 
-
-# Details:
-# The 2001 C-CAP data sets were used to correspond to the 2002/2003 SFEI dataset based on Delta 2002 and Suisun 2003 VegCAMP mapping,
-# The 2016 C-CAP data set3 were used to correspond to the 2015/2016 SFEI dataset based on Delta 2016 and Suisun 2015 mapping from DARI and BAARI
 
 
-## Import CDFW’s VegCAMP mapping Delta 2002 and Suisun 2003 
+## Import Delta 2002 and Suisun 2003 VegCAMP mapping
 # https://wildlife.ca.gov/Data/GIS/Vegetation-Data
 
-vc_suis_2006 <- file.path(folder,"VegCAMP/500_Suis2006/ds500.gdb")
-sf::st_layers(dsn = vc_suis_2006)
-suis_2006 <- sf::st_read(dsn = vc_suis_2006, layer= "ds500")
+# Delta 2006 (cannot find 2002; can only find 2006)
+
+# The following report describes the vegetation classification and mapping of the Legal Delta
+# portion of the Sacramento-San Joaquin River Delta conducted in 2005-2006 
+
+vc_delta_2006 <- file.path(folder,"VegCAMP/292_SacSJ/ds292.gdb")
+sf::st_layers(dsn = vc_delta_2006)
+delta_2006 <- sf::st_read(dsn = vc_delta_2006, layer= "ds292")
+delta_2006 %>% 
+  ggplot() +
+  geom_sf()
+
+
+# Delta 2016 (won't unzip)
+
+# vc_delta_2016 <- file.path(folder,"VegCAMP/ds2855/ds2855.gdb")
+# sf::st_layers(dsn = vc_delta_2016)
+# delta_2016 <- sf::st_read(dsn = vc_delta_2016, layer= "ds2855")
+# delta_2016 %>% 
+#   ggplot() +
+#   geom_sf()
+
+
+# Suisun 2015 
+
+vc_suis_2015 <- file.path(folder,"VegCAMP/2676_Suis2015/ds2676.gdb")
+sf::st_layers(dsn = vc_suis_2015)
+suis_2015 <- sf::st_read(dsn = vc_suis_2015, layer= "ds2676")
+suis_2015 %>% 
+  ggplot() +
+  geom_sf()
+
+
+
+# Suisun 2003 
+
+vc_suis_2003 <- file.path(folder,"VegCAMP/162/ds162.gdb")
+sf::st_layers(dsn = vc_suis_2003)
+suis_2003 <- sf::st_read(dsn = vc_suis_2003, layer= "ds162")
+suis_2003 %>% 
+  ggplot() +
+  geom_sf()
+
+
+
