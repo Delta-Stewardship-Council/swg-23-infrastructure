@@ -30,8 +30,6 @@ library(ggplot2)
 #   based on Delta 2016 and Suisun 2015 mapping from DARI and BAARI
 
 
-
-
 # set to my directory for now
 folder <- "C:/Users/KAlstad/OneDrive - California Department of Fish and Wildlife/NCEAS_data"
 infra <- "C:/Users/KAlstad/Documents/Github_C/swg-23-infrastructure"
@@ -83,13 +81,20 @@ tidal_tv_reproj <- project(tidal_tv, crs(c2016r))
 #raster_cp <- crop(canopy, tidal_bf_reproj, mask= T)
 c2016rcp <- crop(c2016r, tidal_tv_reproj, mask= T)
 c2001rcp <- crop(c2001r, tidal_tv_reproj, mask= T)
+
+# convert crs to "NAD83 / California Albers\" ID[\"EPSG\",3310]]"
+c2016 <- project(c2016rcp,  "EPSG:3310")
+c2001 <- project(c2001rcp,  "EPSG:3310")
+crs(c2016)
+crs(c2001)
 # plot the cropped canopy raster and check
 #plot(raster_cp)
 plot(c2016rcp)
 plot(c2001rcp)
 
 # you can convert the raster object into a dataframe and access the values that way
-c2016rcp_df <- as.data.frame(c2016rcp)
+c2016_df <- as.data.frame(c2016)
+c2001_df <- as.data.frame(c2001)
 
 # Delta 2016 and Suisun 2015 mapping from DARI and BAARI
 # Read in SFEI Bay Area Aquatic Resources Inventory BAARI data from ESRI geodatabase file (.gdb) using this suggestion:
