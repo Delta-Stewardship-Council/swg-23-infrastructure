@@ -246,10 +246,10 @@ browns <- islands %>%
   filter(NAME=="BROWNS ISLAND")
 
 # draw a line to represent the least amount of distance between the two islands
-line_betw_islands <- st_nearest_points(sherman, browns)
+line_betw_islands <- sf::st_nearest_points(sherman, browns)
 
 # find the midpoint on that line
-midpoint <- st_centroid(line_betw_islands)
+midpoint <- sf::st_centroid(line_betw_islands)
 
 # check the plot
 ggplot() +
@@ -259,7 +259,7 @@ ggplot() +
   geom_sf(data = midpoint)
 
 # reproject the midpoint to use WGS 84 to get the exact lat/lon
-midpoint_lat_lon <- st_transform(midpoint, crs = 4326)
+midpoint_lat_lon <- sf::st_transform(midpoint, crs = 4326)
 midpoint_lat_lon
 
 # how to:
