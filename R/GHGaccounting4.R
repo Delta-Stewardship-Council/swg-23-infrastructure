@@ -15,7 +15,7 @@
 library(terra)
 library(sf)
 library(ggplot2)
-
+library(dplyr)
 #	Land use in early 2000s and present day (as represented by 2016) as follows. 
 # Two data sets were used: the NOAA C-CAP database (https://coast.noaa.gov/digitalcoast/data/ccapregional.html) 
 # for comparison with more detailed San Francisco Estuary Institute (SFEI) datasets 
@@ -31,17 +31,18 @@ library(ggplot2)
 
 
 # set to my directory for now
+
 folder <- "C:/Users/KAlstad/OneDrive - California Department of Fish and Wildlife/NCEAS_data"
-infra <- "C:/Users/KAlstad/Documents/Github_C/swg-23-infrastructure"
+infra <- "C:/Users/KAlstad/OneDrive - California Department of Fish and Wildlife/swg-23-infrastructure"
 
 # using Tidally influenced boundary and assuming this is the same as the
 # "MHHWS tidal boundary from Brophy et al. 2019" that is listed in Deverel et al instructions 
 
 tidal <- sf::read_sf(file.path(infra,"data-raw/shapefiles/deltaBoundary/SacSJ_TidallyInfluencedBoundary/Tidally_Influenced_Delta_SacSJ.shp"))%>%
   st_transform(crs = 3310)
-tidal %>% 
-  ggplot() +
-  geom_sf()
+# tidal %>% 
+#   ggplot() +
+#   geom_sf()
 
 # try terra version of shp read (as an example)
 # path <- file.path(infra,"data-raw/shapefiles/deltaBoundary/SacSJ_LegalBoundary/legal_delta_SacSJ.shp") 
@@ -69,7 +70,7 @@ c2001r <- rast(caps2001)
 # convert tidal into a terra vector object
 tidal_tv <- vect(tidal)
 # plot the converted shapefile
-plot(tidal_tv)
+#plot(tidal_tv)
 
 # reproject tidal_tv with the same CRS as the canopy raster
 #tidal_tv_reproj <- project(tidal_tv, crs(canopy))
@@ -85,13 +86,13 @@ c2001rcp <- crop(c2001r, tidal_tv_reproj, mask= T)
 # convert crs to "NAD83 / California Albers\" ID[\"EPSG\",3310]]"
 c2016 <- project(c2016rcp,  "EPSG:3310")
 c2001 <- project(c2001rcp,  "EPSG:3310")
-crs(c2016)
-crs(c2001)
+# crs(c2016)
+# crs(c2001)
 
 # plot the cropped canopy raster and check
 #plot(raster_cp)
-plot(c2016rcp)
-plot(c2001rcp)
+# plot(c2016rcp)
+# plot(c2001rcp)
 
 # you can convert the raster object into a dataframe 
 # The values range from 2 to 21 and what each value represents can be found in this pdf here:
@@ -99,7 +100,18 @@ plot(c2001rcp)
 
 c2016_df <- as.data.frame(c2016)
 c2001_df <- as.data.frame(c2001)
+colnames(c2016_df) <- c("ID")
 
+library(readr)
+CCAPtyps <- data.frame()
+CCAPtyps <- read.csv(file.path(infra,"data-raw/csvFiles/CCAPlandcovertypes.csv"), skip = 1, header=FALSE, sep=",")
+colnames(CCAPtyps) <- c("ID", "Class")
+
+# r merge CCAP with land type names by ID
+c2016_df2 <- merge(c2016_df, CCAPtyps, by = 'ID')
+head(c2016_df2)  # do i need this?
+
+unique(c2016_df2$Class)
 
 # Delta 2016 and Suisun 2015 mapping from DARI and BAARI
 # Read in SFEI Bay Area Aquatic Resources Inventory BAARI data from ESRI geodatabase file (.gdb) using this suggestion:
@@ -109,20 +121,18 @@ baariloc <- file.path(folder,"BAARI/BAARI_v2.1_final__SFEI_2017/BAARI_v2pt1__SFE
 sf::st_layers(dsn = baariloc)
 BAARIbay <- sf::st_read(dsn = baariloc, layer= "BAARI_v2pt1_Baylands")
 BAARIbp <- st_transform(BAARIbay,  "EPSG:3310")
-crs(BAARIbp)
-BAARIbp %>% 
-  ggplot() +
-  geom_sf()
-# crs(tidal_tv) # "EPSG:3310"
-# crs(BAARIbay)
-# str(BAARIbay)
-# head(BAARIbay)
+#crs(BAARIbp)
+# BAARIbp %>% 
+#   ggplot() +
+#   geom_sf()
+
 
 BAARIwet <- sf::st_read(dsn = baariloc, layer= "BAARI_v2pt1_Wetlands")
 BAARIwp <- st_transform(BAARIwet,  "EPSG:3310")
-BAARIwp %>% 
-  ggplot() +
-  geom_sf()
+#crs(BAARIwp)
+# BAARIwp %>% 
+#   ggplot() +
+#   geom_sf()
 
 # Error reading streams layer
 # BAARIstm <- sf::st_read(dsn = baariloc, layer= "BAARI_v2pt1_Streams")
@@ -141,18 +151,18 @@ BAARIwp %>%
 dariloc <- file.path(folder,"DARIv1.1/DARIv1.1_SFEI_2022.gdb")
 sf::st_layers(dsn = dariloc)
 dariwet <- sf::st_read(dsn = dariloc, layer= "DARIv1_1_wetlands")
-crs(dariwet) # already 3310
+#crs(dariwet) # already 3310
 
-dariwet %>% 
-  ggplot() +
-  geom_sf()
+# dariwet %>% 
+#   ggplot() +
+#   geom_sf()
 
 daristm <- sf::st_read(dsn = dariloc, layer= "DARIv1_1_streams")
-crs(daristm) # already 3310
+#crs(daristm) # already 3310
 
-daristm %>% 
-  ggplot() +
-  geom_sf()
+# daristm %>% 
+#   ggplot() +
+#   geom_sf()
 
 
 
@@ -167,11 +177,11 @@ daristm %>%
 vc_delta_2006 <- file.path(folder,"VegCAMP/292_SacSJ/ds292.gdb")
 sf::st_layers(dsn = vc_delta_2006)
 delta_2006 <- sf::st_read(dsn = vc_delta_2006, layer= "ds292")
-crs(delta_2006) # already 3310
+#crs(delta_2006) # already 3310
 
-delta_2006 %>% 
-  ggplot() +
-  geom_sf()
+# delta_2006 %>% 
+#   ggplot() +
+#   geom_sf()
 
 
 # Delta 2016 (won't unzip)
@@ -189,11 +199,11 @@ delta_2006 %>%
 vc_suis_2015 <- file.path(folder,"VegCAMP/2676_Suis2015/ds2676.gdb")
 sf::st_layers(dsn = vc_suis_2015)
 suis_2015 <- sf::st_read(dsn = vc_suis_2015, layer= "ds2676")
-crs(suis_2015) # already 3310
+#crs(suis_2015) # already 3310
 
-suis_2015 %>% 
-  ggplot() +
-  geom_sf()
+# suis_2015 %>% 
+#   ggplot() +
+#   geom_sf()
 
 
 
@@ -202,12 +212,33 @@ suis_2015 %>%
 vc_suis_2003 <- file.path(folder,"VegCAMP/162/ds162.gdb")
 sf::st_layers(dsn = vc_suis_2003)
 suis_2003 <- sf::st_read(dsn = vc_suis_2003, layer= "ds162")
-crs(suis_2003) # already 3310
+#crs(suis_2003) # already 3310
 
-suis_2003 %>% 
+# suis_2003 %>% 
+#   ggplot() +
+#   geom_sf()
+
+
+#################################################
+# From Deveral instructions
+# 3.	We delineated the brackish from freshwater areas as the midpoint 
+# between Browns Island and Sherman Lake. We then created two corresponding 
+# polygons and clipped all spatial datasets within the polygons.
+
+# Find shape file with Browns Island and Sherman Lake identified.  
+
+islands <- sf::read_sf(file.path(infra,"data-raw/shapefiles/RevisedIslands_160912_AllIslands/RevisedIslands_160912_AllIslands.shp"))
+islands %>%
+  filter(NAME=="SHERMAN ISLAND" | NAME=="BROWNS ISLAND" )%>%
   ggplot() +
   geom_sf()
+str(islands)
+twoisl <- islands %>%
+  filter(NAME=="SHERMAN ISLAND" | NAME=="BROWNS ISLAND" )
+distance <- st_distance(twoisl)
 
-str(suis_2003)
-
+# how to:
+# add the midpoint to the CCAP data / map and then
+# create two corresponding polygons 
+# clip all spatial datasets within the polygons
 
