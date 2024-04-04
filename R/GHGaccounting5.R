@@ -39,7 +39,7 @@ infra <- "C:/Users/KAlstad/OneDrive - California Department of Fish and Wildlife
 # "MHHWS tidal boundary from Brophy et al. 2019" that is listed in Deverel et al instructions 
 
 tidal <- sf::read_sf(file.path(infra,"data-raw/shapefiles/deltaBoundary/SacSJ_TidallyInfluencedBoundary/Tidally_Influenced_Delta_SacSJ.shp"))%>%
-  st_transform(crs = 3310)
+  st_transform(crs = 4326)
 # tidal %>% 
 #   ggplot() +
 #   geom_sf()
@@ -70,7 +70,7 @@ c2001r <- rast(caps2001)
 # convert tidal into a terra vector object
 tidal_tv <- vect(tidal)
 # plot the converted shapefile
-#plot(tidal_tv)
+plot(tidal_tv)
 
 # reproject tidal_tv with the same CRS as the canopy raster
 #tidal_tv_reproj <- project(tidal_tv, crs(canopy))
@@ -251,54 +251,24 @@ ggplot() +
   geom_sf(data = midpoint)
 
 # reproject the midpoint to use WGS 84 to get the exact lat/lon
-midpoint_lat_lon <- sf::st_transform(midpoint, crs = 3310) # or 3310??  crs = 4326
+midpoint_lat_lon <- sf::st_transform(midpoint, crs = 4326) # or 3310??  crs = 4326
 midpoint_lat_lon
 
-# Extract the latitude of the point
-latitude <- st_coordinates(point_sf)[, "Y"]
-
-
-
-
-
-# how to:
-# add the midpoint to the CCAP data / map 
-# create two corresponding polygons 
-# clip all spatial datasets within the polygons
-
-
-
-
-# Steps from GPT
-# Load required libraries
-library(sf)
-
-# Step 1: Create a non-square polygon object representing the boundary of the analysis
-# Creating a non-square polygon for demonstration purposes
-# You can replace this with your actual polygon
-coords <- matrix(c(
-  0, 0,
-  1, 0.5,
-  0.5, 1,
-  0, 0
-), ncol = 2, byrow = TRUE)
-polygon <- st_polygon(list(coords))
-boundary_sf <- st_sfc(polygon, crs = st_crs(4326))  # Define the CRS
-
-# Step 2: Add a single point within the polygon
-point <- st_point(c(0.3, 0.4))  # Coordinates (longitude, latitude)
-point_sf <- st_sfc(point, crs = st_crs(4326))  # Define the CRS
+# # Extract the latitude of the point
+# latitude <- st_coordinates(point_sf)[, "Y"]
 
 # Step 3: Find the longitude of the point
-longitude <- st_coordinates(point_sf)[1, "X"]
+longitude <- st_coordinates(midpoint_lat_lon)[1, "X"]
+
 
 # Step 4: Create a vertical line at the longitude of the point
-vertical_line_coords <- matrix(c(longitude, st_bbox(boundary_sf)$ymin, longitude, st_bbox(boundary_sf)$ymax), ncol = 2, byrow = TRUE)
+vertical_line_coords <- matrix(c(longitude, st_bbox(tidal)$ymin, longitude, st_bbox(tidal)$ymax), ncol = 2, byrow = TRUE)
 vertical_line <- st_linestring(vertical_line_coords)
 vertical_line_sf <- st_sfc(vertical_line, crs = st_crs(4326))  # Define the CRS
 
+
 # Step 5: Intersect the vertical line with the polygon boundary
-intersection_points <- st_intersection(boundary_sf, vertical_line_sf)
+intersection_points <- st_intersection(tidal, vertical_line_sf)
 
 # Step 6: Extract the coordinates of the intersection points
 intersection_coords <- st_coordinates(intersection_points)
@@ -315,12 +285,23 @@ line <- st_linestring(line_coords)
 line_sf <- st_sfc(line, crs = st_crs(4326))  # Define the CRS
 
 # Step 8: Split the polygon along the line
-split_polygons <- st_difference(boundary_sf, line_sf)
+# split_polygons <- st_difference(tidal, line_sf)
+# plot(split_polygons, col=c("blue", "red"))
+# no good
+
+# try terra version of split
+vv <- vect(vertical_line_sf)
+p <- split(tidal_tv , vv)
+plot(p, col=c("blue", "red"))
+
 
 # Plotting
-plot(split_polygons, main = "Split Polygon with Point and Line")
-plot(point_sf, add = TRUE, pch = 19, col = "red")
-plot(line_sf, add = TRUE, col = "blue")
+plot(tidal_tv, main = "tidal with Point and Line")
+plot(midpoint_lat_lon, add = TRUE, pch = 19, col = "red")
+plot(vertical_line_sf, add = TRUE, col = "blue")
+
+
+
 
 
 
