@@ -314,8 +314,11 @@ line_coords <- cbind(longitude_replicated, intersection_coords[, "Y"])
 line <- st_linestring(line_coords)
 line_sf <- st_sfc(line, crs = st_crs(4326))  # Define the CRS
 
+# Step 8: Split the polygon along the line
+split_polygons <- st_difference(boundary_sf, line_sf)
+
 # Plotting
-plot(boundary_sf, main = "Polygon with Point and Line")
+plot(split_polygons, main = "Split Polygon with Point and Line")
 plot(point_sf, add = TRUE, pch = 19, col = "red")
 plot(line_sf, add = TRUE, col = "blue")
 
