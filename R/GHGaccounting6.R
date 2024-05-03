@@ -22,12 +22,16 @@ library(dplyr)
 # based on the Bay Area Aquatic Resources Inventory (BAARI), Delta Aquatic Resources Inventory (DARI), 
 # and CDFW’s VegCAMP mapping. 
 
+#################################################################################
+#################################################################################
 # Details:
 # The 2001 C-CAP data sets were used to correspond to the 2002/2003 SFEI dataset 
 #   based on Delta 2002 and Suisun 2003 VegCAMP mapping,
 
 # The 2016 C-CAP data sets were used to correspond to the 2015/2016 SFEI dataset 
 #   based on Delta 2016 and Suisun 2015 mapping from DARI and BAARI
+#################################################################################
+#################################################################################
 
 
 # set to my directory for now
@@ -35,8 +39,15 @@ library(dplyr)
 folder <- "C:/Users/KAlstad/OneDrive - California Department of Fish and Wildlife/NCEAS_data"
 infra <- "C:/Users/KAlstad/OneDrive - California Department of Fish and Wildlife/swg-23-infrastructure"
 
-# using Tidally influenced boundary and assuming this is the same as the
+# using Tidally influenced boundary from: 
+#https://data.cnra.ca.gov/dataset/san-francisco-bay-and-sacramento-san-joaquin-delta-dem-for-modeling-version-4-2/resource/bf85c268-9a49-447a-96d4-9ec2761f361b
 # "MHHWS tidal boundary from Brophy et al. 2019" that is listed in Deverel et al instructions 
+
+dembay <- sf::read_sf(file.path(folder ,"DEM_baydelta/dem_bay_delta_10m_20201207.tif"))%>%
+
+# read in the canopy raster
+dembayr <- rast(dembay)
+
 
 tidal <- sf::read_sf(file.path(infra,"data-raw/shapefiles/deltaBoundary/SacSJ_TidallyInfluencedBoundary/Tidally_Influenced_Delta_SacSJ.shp"))%>%
   st_transform(crs = 4326)
@@ -110,6 +121,7 @@ head(c2016_df2)  # do i need this?
 
 unique(c2016_df2$Class)
 
+
 # Delta 2016 and Suisun 2015 mapping from DARI and BAARI
 # Read in SFEI Bay Area Aquatic Resources Inventory BAARI data from ESRI geodatabase file (.gdb) using this suggestion:
 # https://gis.stackexchange.com/questions/184013/read-a-table-from-an-esri-file-geodatabase-gdb-using-r/271043#271043
@@ -119,17 +131,17 @@ sf::st_layers(dsn = baariloc)
 BAARIbay <- sf::st_read(dsn = baariloc, layer= "BAARI_v2pt1_Baylands")
 BAARIbp <- st_transform(BAARIbay,  "EPSG:3310")
 #crs(BAARIbp)
-# BAARIbp %>% 
-#   ggplot() +
-#   geom_sf()
+BAARIbp %>%
+  ggplot() +
+  geom_sf()
 
 
 BAARIwet <- sf::st_read(dsn = baariloc, layer= "BAARI_v2pt1_Wetlands")
 BAARIwp <- st_transform(BAARIwet,  "EPSG:3310")
-#crs(BAARIwp)
-# BAARIwp %>% 
-#   ggplot() +
-#   geom_sf()
+crs(BAARIwp)
+BAARIwp %>%
+  ggplot() +
+  geom_sf()
 
 # Error reading streams layer
 # BAARIstm <- sf::st_read(dsn = baariloc, layer= "BAARI_v2pt1_Streams")
@@ -143,77 +155,90 @@ BAARIwp <- st_transform(BAARIwet,  "EPSG:3310")
 #   ! no applicable method for 'st_as_grob' applied to an object of class "c('XY', 'MULTICURVE', 'sfg')"
 
 
-
-# Read in SFEI Delta Aquatic Resources Inventory (DARI)
-dariloc <- file.path(folder,"DARIv1.1/DARIv1.1_SFEI_2022.gdb")
-sf::st_layers(dsn = dariloc)
-dariwet <- sf::st_read(dsn = dariloc, layer= "DARIv1_1_wetlands")
-#crs(dariwet) # already 3310
-
-# dariwet %>% 
-#   ggplot() +
-#   geom_sf()
-
-daristm <- sf::st_read(dsn = dariloc, layer= "DARIv1_1_streams")
-#crs(daristm) # already 3310
-
-# daristm %>% 
-#   ggplot() +
-#   geom_sf()
+# 2022: this is not used by Deverel but we may want
+# # Read in SFEI Delta Aquatic Resources Inventory (DARI)
+# dariloc <- file.path(folder,"DARIv1.1/DARIv1.1_SFEI_2022.gdb")
+# sf::st_layers(dsn = dariloc)
+# dariwet <- sf::st_read(dsn = dariloc, layer= "DARIv1_1_wetlands")
+# #crs(dariwet) # already 3310
+# # dariwet %>% 
+# #   ggplot() +
+# #   geom_sf()
+# 
+# daristm <- sf::st_read(dsn = dariloc, layer= "DARIv1_1_streams")
+# #crs(daristm) # already 3310
+# # daristm %>% 
+# #   ggplot() +
+# #   geom_sf()
 
 
 
-## Import Delta 2002 and Suisun 2003 VegCAMP mapping
+## Import Delta and Suisun VegCAMP mapping data
 # https://wildlife.ca.gov/Data/GIS/Vegetation-Data
 
-# Delta 2006 (cannot find 2002; can only find 2006)
-
-# The following report describes the vegetation classification and mapping of the Legal Delta
-# portion of the Sacramento-San Joaquin River Delta conducted in 2005-2006 
-
+# Sacramento - San Joaquin Legal Delta (CDFW) (zip) [no date in title]
+# Vegcamp pdf: "The following report describes the vegetation classification and mapping of the Legal Delta
+# portion of the Sacramento-San Joaquin River Delta conducted in 2005-2006" 
 vc_delta_2006 <- file.path(folder,"VegCAMP/292_SacSJ/ds292.gdb")
 sf::st_layers(dsn = vc_delta_2006)
 delta_2006 <- sf::st_read(dsn = vc_delta_2006, layer= "ds292")
-#crs(delta_2006) # already 3310
+crs(delta_2006) # already 3310
+delta_2006 %>%
+  ggplot() +
+  geom_sf()
 
-# delta_2006 %>% 
+# Sacramento - San Joaquin Delta Vegetation and Land Use Update 2016 (CDFW) (zip)
+vc_delta_2016 <- file.path(folder,"VegCAMP/2855/ds2855.gdb")
+sf::st_layers(dsn = vc_delta_2016)
+delta_2016 <- sf::st_read(dsn = vc_delta_2016, layer= "ds2855")
+# delta_2016 %>%
 #   ggplot() +
 #   geom_sf()
 
 
-# Delta 2016 (won't unzip)
+# Suisun 2003 
+vc_suis_2003 <- file.path(folder,"VegCAMP/162/ds162.gdb")
+sf::st_layers(dsn = vc_suis_2003)
+suis_2003 <- sf::st_read(dsn = vc_suis_2003, layer= "ds162")
+#crs(suis_2003) # already 3310
+# suis_2003 %>%
+#   ggplot() +
+#   geom_sf()
 
-# vc_delta_2016 <- file.path(folder,"VegCAMP/ds2855/ds2855.gdb")
-# sf::st_layers(dsn = vc_delta_2016)
-# delta_2016 <- sf::st_read(dsn = vc_delta_2016, layer= "ds2855")
-# delta_2016 %>% 
+
+# Suisun 2006 
+vc_suis_2006 <- file.path(folder,"VegCAMP/500_Suis2006/ds500.gdb")
+sf::st_layers(dsn = vc_suis_2006)
+suis_2006 <- sf::st_read(dsn = vc_suis_2006, layer= "ds500")
+#crs(suis_2006) # already 3310
+# suis_2006 %>%
 #   ggplot() +
 #   geom_sf()
 
 
 # Suisun 2015 
-
 vc_suis_2015 <- file.path(folder,"VegCAMP/2676_Suis2015/ds2676.gdb")
 sf::st_layers(dsn = vc_suis_2015)
 suis_2015 <- sf::st_read(dsn = vc_suis_2015, layer= "ds2676")
 #crs(suis_2015) # already 3310
-
-# suis_2015 %>% 
+# suis_2015 %>%
 #   ggplot() +
 #   geom_sf()
 
 
 
-# Suisun 2003 
 
-vc_suis_2003 <- file.path(folder,"VegCAMP/162/ds162.gdb")
-sf::st_layers(dsn = vc_suis_2003)
-suis_2003 <- sf::st_read(dsn = vc_suis_2003, layer= "ds162")
-#crs(suis_2003) # already 3310
 
-# suis_2003 %>% 
-#   ggplot() +
-#   geom_sf()
+
+
+
+
+
+
+
+
+
+
 
 
 #################################################
@@ -263,7 +288,7 @@ vertical_line_sf <- st_sfc(vertical_line, crs = st_crs(4326))  # Define the CRS
 
 # 3.3: Split the polygon along the line
 vv <- vect(vertical_line_sf)
-p <- split(tidal_tv , vv)
+p <- Ctidal_tv , vv)
 plot(p, col=c("blue", "red"))
 
 # Plotting
