@@ -123,11 +123,11 @@ plot(hist3r)
 #####################
 #####################
 ##  Current problem: this shape file is not reading in correctly!
-cropmap2016 <- sf::read_sf(file.path(folder ,"i15_cropmap_2016/i15_Crop_Mapping_2016_SHP/i15_Crop_Mapping_2016.shp"))
-str(cropmap2016)
-cropmap2016t <-cropmap2016%>%
+cropmap2022 <- sf::read_sf(file.path(folder ,"LandIQ/i15_Crop_Mapping_2022_Provisional_shp/i15_Crop_Mapping_2022_Provisional.shp"))
+str(cropmap2022)
+cropmap2022t <-cropmap2022%>%
   st_transform(crs = 4326)
-cropmap2016t %>% 
+cropmap2022t %>% 
   ggplot() +
   geom_sf()
 
