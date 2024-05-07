@@ -54,7 +54,8 @@ infra <- "C:/Users/KAlstad/OneDrive - California Department of Fish and Wildlife
 # dembayrp <- project(dembayr,  "EPSG:3310")
 # saveRDS(dembayrp, file = "dembayrp")
 
-dembayrp <- readRDS(file = "dembayrp")
+#file.choose()
+dembayrp <- readRDS(file = file.path("data-raw\\intermedGHG\\dembayrp"))
 str(dembayrp)
 # do not know how to use this DEM to find tidal range (as suggested in Deveral instructions)
 # default to shape file
@@ -82,8 +83,8 @@ tidal %>%
 # saveRDS(c2016r, file = "c2016r")
 # saveRDS(c2001r, file = "c2001r")
 
-c2016r <- readRDS(file = "c2016r")
-c2001r <- readRDS(file = "c2001r")
+c2016r <- readRDS(file = "data-raw\\intermedGHG\\c2016r")
+c2001r <- readRDS(file = "data-raw\\intermedGHG\\c2001r")
 
 
 # In order to clip the large ccap raster,
