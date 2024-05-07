@@ -48,11 +48,18 @@ dembay <- sf::read_sf(file.path(folder ,"DEM_baydelta/dem_bay_delta_10m_20201207
 # read in the canopy raster
 dembayr <- rast(dembay)
 
+
 tidal <- sf::read_sf(file.path(infra,"data-raw/shapefiles/deltaBoundary/SacSJ_TidallyInfluencedBoundary/Tidally_Influenced_Delta_SacSJ.shp"))%>%
   st_transform(crs = 4326)
-tidal %>%
-  ggplot() +
-  geom_sf()
+# tidal %>% 
+#   ggplot() +
+#   geom_sf()
+
+# try terra version of shp read (as an example)
+# path <- file.path(infra,"data-raw/shapefiles/deltaBoundary/SacSJ_LegalBoundary/legal_delta_SacSJ.shp") 
+# v <- vect(path)
+# # plot the shapefile
+# plot(v)
 
 # 2.	All spatial data sets were clipped according to the MHHWS tidal boundary from Brophy et al. 2019. (same a our tidal, i think)
 # Brophy, L.S., C.M. Greene, V.C. Hare, B. Holycross, A. Lanier, W.N. Heady, et al. 2019. 
@@ -223,6 +230,17 @@ suis_2015 <- sf::st_read(dsn = vc_suis_2015, layer= "ds2676")
 
 
 
+
+
+
+
+
+
+
+
+
+
+
 #################################################
 # From Deveral instructions
 # Step 3.	We delineated the brackish from freshwater areas as the midpoint 
@@ -269,9 +287,9 @@ vertical_line <- st_linestring(vertical_line_coords)
 vertical_line_sf <- st_sfc(vertical_line, crs = st_crs(4326))  # Define the CRS
 
 # 3.3: Split the polygon along the line
-# vv <- vect(vertical_line_sf)
-# p <- c(tidal_tv , vv)
-# plot(p, col=c("blue", "red"))
+vv <- vect(vertical_line_sf)
+p <- Ctidal_tv , vv)
+plot(p, col=c("blue", "red"))
 
 # Plotting
 plot(tidal_tv, main = "tidal with Point and Line")
