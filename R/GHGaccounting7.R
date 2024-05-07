@@ -48,6 +48,16 @@ dembay <- file.path(folder ,"DEM_baydelta/dem_bay_delta_10m_20201207.tif")
 dembayr <- rast(dembay)
 plot(dembayr)
 
+class(dembayr)
+dembayr
+#crs(your_raster) <- "your_crs"
+dembayrp <- project(dembayr,  "EPSG:3310")
+
+# convert the raster object into a dataframe 
+dembayrp_df <- as.data.frame(dembayr)
+
+colnames(c2016_df) <- c("ID")
+
 #Historical, Modern, and Reference scenarios were based on historical land cover mapping from
 #Whipple et al. (2012) 
 
@@ -55,6 +65,13 @@ plot(dembayr)
 #https://water.usgs.gov/GIS/dsdl/ds240/index.html
 #https://water.usgs.gov/GIS/dsdl/ds240/index.html#raster
 
+library(readr)
+histcodes <- data.frame()
+histcodes <- read.csv(file.path(infra,"EnhancedHistori/CoverCodes.csv"), skip = 0, header=FALSE, sep=",")
+colnames(covtyps) <- c("ID", "Class")
+
+
+#LUCODE are included in these files
 
 # lower bay
 histshp2 <- sf::read_sf(file.path(folder ,"EnhancedHistori/g37122/g37122.shp"))%>%
@@ -112,7 +129,7 @@ hist3 <- file.path(folder ,"EnhancedHistori/giras3/giras3.tif")
 # read in the canopy raster
 hist3r <- rast(hist3)
 plot(hist3r)
-
+class(hist3r)
 
 #Vaughn et al: modern land cover mapping developed for the Landscape Scenario
 #Planning Tool (LSPT; https://www.sfei.org/projects/landscape-scenario-planning-tool) from 2016
@@ -122,14 +139,32 @@ plot(hist3r)
 
 #####################
 #####################
-##  Current problem: this shape file is not reading in correctly!
+##  Current problem: this shape file is transforming correctly!
+# Error generated: "GDAL Message 1: Sub-geometry 0 has coordinate dimension 2, but container has 3"
 cropmap2022 <- sf::read_sf(file.path(folder ,"LandIQ/i15_Crop_Mapping_2022_Provisional_shp/i15_Crop_Mapping_2022_Provisional.shp"))
 str(cropmap2022)
+st_crs(data$areacolumn) <- 4326
 cropmap2022t <-cropmap2022%>%
   st_transform(crs = 4326)
 cropmap2022t %>% 
   ggplot() +
   geom_sf()
+
+# Chris says LandIQ data is part of the data that Angel put together to KNB
+
+
+crops <- file.path(folder,"NatHabMgeWetland/PM4.16.gdb")
+sf::st_layers(dsn = crops)
+mgwetlnd <- sf::st_read(dsn = crops, layer= "ManagedWetlands_2016")
+mgwetlnd %>%
+  ggplot() +
+  geom_sf()
+nathab <- sf::st_read(dsn = crops, layer= "Natural_Habitat")
+nathab %>%
+  ggplot() +
+  geom_sf()
+names(nathab)
+
 
 # Sacramento - San Joaquin Delta Vegetation and Land Use Update 2016 (CDFW) (zip)
 vc_delta_2016 <- file.path(folder,"VegCAMP/2855/ds2855.gdb")
@@ -140,12 +175,41 @@ delta_2016 %>%
   geom_sf()
 
 
+
+
+
+
 #To develop the Maximum potential scenario, we first
 #erased areas that were classified as urban or barren. Of the remaining area, everywhere
 #currently within intertidal elevations was assigned to tidal wetland. 
+
+
 # Subsided areas, defined as below mean lower low water (MLLW) according to a 2017 tidally referenced DEM (DSC 2022b;
 # SFEI 2022), were assigned to be nontidal peat-building wetland managed for subsidence reversal (Fig. A2).
 # Vaughn et al. preview
+
+#To develop the GHG-habitat scenario, we first excluded areas that were
+#classified as developed, existing wetland, or cultivated for rice by the LandIQ 2018 dataset of
+#agricultural parcels (CDWR and LandIQ 2021).  
+#We selected LandIQ parcels that are currently within the intertidal zone for conversion to tidal marsh.
+#This area included only 12,756 ha, short
+#of the 13,200 ha (32,500 acres) of tidal marsh called for in the Delta Plan Performance Measure
+#4.16 from the amended chapter 4, “Protect, Restore, and Enhance the Delta Ecosystem” (DSC 2022a).
+                                                                                      
+#In addition to this 12,756 ha of tidal wetland,
+#the GHG-habitat scenario included 12,165 ha of managed wetland for subsidence reversal and
+#carbon sequestration (Delta Plan Performance Measure 5.2; DSC 2013).....
+
+
+#To develop landscape configurations for GHG 1 and GHG 2, we first excluded areas that were
+#classified as developed, existing wetland, or cultivated for rice and assigned LandIQ parcels to
+#be nontidal peat-building wetland or rice field *****on the basis of highest rank for potential GHG
+#benefit**** [not clear] for a total of 30,972 ha (76,500 acres) for GHG 1 and 15,425 ha (38,100 acres) for GHG
+#2. For each scenario, the first 45% of parcel acreage was assigned to rice and the remaining
+#parcels were assigned to nontidal peat-building wetland.
+
+
+
 
 
 
