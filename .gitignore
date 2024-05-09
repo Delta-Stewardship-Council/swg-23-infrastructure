@@ -48,6 +48,9 @@ po/*~
 # RStudio Connect folder
 rsconnect/
 
+# DS Store Files
+*.DS_Store
+
 # Shape files
 data-raw/shapefiles/conservationEasements
 data-raw/shapefiles/protectedAreas
@@ -107,3 +110,5 @@ data-raw/shapefiles/managedWetlands/Modern_Habitat_LandExtend_2016.shp
 data-raw/shapefiles/managedWetlands/Modern_Habitat_LandExtend_2016.shp.xml
 data-raw/shapefiles/managedWetlands/Modern_Habitat_LandExtend_2016.shx
 data-raw/shapefiles/managedWetlands/PM_LandTyp.png
+
+
