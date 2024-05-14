@@ -10,13 +10,26 @@ library(ggplot2)
 
 # Workflow ----------------------------------------------------------------
 
+# 0. Download managed wetland shapefile from KNB
 # 1. Read in the levee polygons
 # 2. Read in the natural habitat managed wetland polygons
 # 3. Per leveed area, find overlap to the wetland polygon
 # 4. Calculate the overlapped area
 
-# Reading the polygons, 1, 2 ----------------------------------------------
 
+
+## Downloads Modern_Habitat_LandExtend_2016.shp from KNB
+knb_url <- "https://knb.ecoinformatics.org/knb/d1/mn/v2/object/urn%3Auuid%3A95d26b1e-0e44-46f0-8580-cabbc942fcb2"
+
+temp_file <- tempfile()
+
+download.file(url = knb_url, destfile = temp_file)
+
+unzip(temp_file, exdir = 'data-raw/shapefiles/managedWetlands')
+
+unlink(temp_file)
+
+# Reading the polygons, 1, 2 ----------------------------------------------
 managedWetlands <- st_read(file.path("data-raw", "shapefiles", "managedWetlands", 
                                      "Modern_Habitat_LandExtend_2016.shp")) %>% 
   st_transform(crs = 3310)

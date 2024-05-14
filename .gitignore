@@ -56,6 +56,7 @@ data-raw/shapefiles/conservationEasements
 data-raw/shapefiles/protectedAreas
 # data-raw/shapefiles/RevisedIslands_160912_AllIslands
 data-raw/shapefiles/subsidenceGDB
+data-raw/shapefiles/managedWetlands
 
 # tif files
 data-raw/dem_bay_delta_10m_20201207.tif
@@ -105,14 +106,5 @@ data-raw/randModel/ref/Island_Leveed_Status.dat
 data-raw/randModel/ref/New folder/ScenarioData.dat
 data-raw/randModel/ref/ProportionWarned.dat
 data-raw/randModel/ref/ScenarioData.dat
-data-raw/shapefiles/managedWetlands/Modern_Habitat_LandExtend_2016.CPG
-data-raw/shapefiles/managedWetlands/Modern_Habitat_LandExtend_2016.dbf
-data-raw/shapefiles/managedWetlands/Modern_Habitat_LandExtend_2016.prj
-data-raw/shapefiles/managedWetlands/Modern_Habitat_LandExtend_2016.sbn
-data-raw/shapefiles/managedWetlands/Modern_Habitat_LandExtend_2016.sbx
-data-raw/shapefiles/managedWetlands/Modern_Habitat_LandExtend_2016.shp
-data-raw/shapefiles/managedWetlands/Modern_Habitat_LandExtend_2016.shp.xml
-data-raw/shapefiles/managedWetlands/Modern_Habitat_LandExtend_2016.shx
-data-raw/shapefiles/managedWetlands/PM_LandTyp.png
 
 
