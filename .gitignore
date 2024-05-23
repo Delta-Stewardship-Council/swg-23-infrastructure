@@ -62,6 +62,9 @@ data-raw/shapefiles/managedWetlands
 data-raw/dem_bay_delta_10m_20201207.tif
 data-raw/dem_bay_delta_10m_20201207.tfw
 
+# large GHG files
+data-raw/Vaughn_etal_and_ARS
+
 # HTML files
 *.html
 doc/workflow_files/
