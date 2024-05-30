@@ -27,10 +27,7 @@ library(dplyr)
 flux_1yr_M_OM_M <- rast("data-raw/Vaughn_etal_and_ARS/flux_1yr_M_OM_M_extent_wBacon_RF.tif")
 sub_1yr_OM_M <- rast("data-raw/Vaughn_etal_and_ARS/sub_1yr_OM_M_extent_wBacon.tif")
 
-tidal <- read_sf("data-raw/shapefiles/deltaBoundary/SacSJ_TidallyInfluencedBoundary/Tidally_Influenced_Delta_SacSJ.shp")
-
-
-tidal <- sf::read_sf(file.path(infra,"data-raw/shapefiles/deltaBoundary/SacSJ_TidallyInfluencedBoundary/Tidally_Influenced_Delta_SacSJ.shp"))%>%
+tidal <- read_sf("data-raw/shapefiles/deltaBoundary/SacSJ_TidallyInfluencedBoundary/Tidally_Influenced_Delta_SacSJ.shp")%>%
   st_transform(crs = 3310)
 crs(tidal)
 
@@ -41,8 +38,24 @@ tidal %>%
 tidal_tv <- terra::vect(tidal)
 plot(tidal_tv)
 
+tidal_boundary_extent <- ext(tidal_tv) |>
+  vect()
+
+plot(flux_1yr_M_OM_M)
+lines(tidal_boundary_extent)
+lines(tidal_boundary_extent, col = "blue")
+
 #mask
-sst_cropped_masked <- mask(sst_cropped, gbr_boundary)
+cropped_masked <- mask(flux_1yr_M_OM_M , tidal_tv)
+cropped_masked
+
+# cropped_masked <- mask(flux_1yr_M_OM_M , tidal_tv)
+# cropped_masked
+
+
+#plot
+plot(cropped_masked)
+lines(tidal_tv)
 
 #plot
 # question: what are the units? 
@@ -55,6 +68,63 @@ plot(sub_1yr_OM_M)
 lines(tidal)
 
 # Next: slice up by leveed area and average raster values within ...
+
+leveeAreas <- read_sf("data-clean/shapefiles/fixedLevees/leveedAreas.shp")
+crs(leveeAreas)
+plot(leveeAreas$LMA)
+str(leveeAreas)
+dim(leveeAreas)
+width(leveeAreas)
+nrow(leveeAreas)
+
+crop(sub_1yr_OM_M, leveeAreas, mask = TRUE)
+
+
+
+# example
+
+library(sf)
+
+# Read raster dataset
+raster_data <- flux_1yr_M_OM_M
+
+# Read vector shape data
+vector_data <- leveeAreas[100, ]
+
+plot(leveeAreas[100, ])
+
+# Loop through each polygon in the vector data and clip the raster
+clipped_rasters <- list()
+for (i in 1:nrow(vector_data)) {
+  polygon <- vector_data[i, ]
+  plot(polygon)
+}
+
+
+test <- crop(raster_data, leveeAreas[100, ], mask = TRUE)
+plot(test)
+
+
+# Loop through each polygon in the vector data and clip the raster
+clipped_rasters <- list()
+for (i in 1:nrow(vector_data)) {
+  polygon <- vector_data[i, ]
+  clipped_raster <- crop(raster_data, polygon)
+  clipped_rasters[[i]] <- clipped_raster
+}
+
+# Process or save the clipped raster data as needed
+# For example, you can save each clipped raster to separate files
+for (i in 1:length(clipped_rasters)) {
+  writeRaster(clipped_rasters[[i]], filename = paste0("clipped_raster_", i, ".tif"), overwrite = TRUE)
+}
+
+
+
+
+
+
+
 
 
 
