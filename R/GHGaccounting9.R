@@ -99,23 +99,25 @@ test <- crop(raster_data, leveeAreas[100, ], mask = TRUE)
 plot(test)
 
 
+
 # Loop through each polygon in the vector data and clip the raster
 clipped_rasters <- list()
 for (i in 1:nrow(vector_data)) {
   polygon <- vector_data[i, ]
-  clipped_raster <- crop(raster_data, polygon)
+  clipped_raster <- crop(raster_data, polygon, na.rm = TRUE)
   clipped_rasters[[i]] <- clipped_raster
+  print(paste("Clipped raster", i, "completed."))
 }
-
-
 
 # Process or save the clipped raster data as needed
 # For example, you can save each clipped raster to separate files
 for (i in 1:length(clipped_rasters)) {
-  writeRaster(clipped_rasters[[i]], filename = paste0("clipped_raster_", i, ".tif"), overwrite = TRUE)
+  # Preprocess to handle missing values
+  clipped_raster <- clipped_rasters[[i]]
+  clipped_raster[is.na(clipped_raster)] <- 0  # Replace missing values with 0
+  # Save the raster
+  writeRaster(clipped_raster, filename = paste0("clipped_raster_", i, ".tif"), overwrite = TRUE)
 }
-
-
 
 
 
