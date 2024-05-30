@@ -2,15 +2,12 @@
 #   Infrastructure -- GHG Accounting
 ## ------------------------------------------ ##
 
-# Life stage: Early Analysis
-
 # Script author(s): Karrin Alstad
 # Date: 2024/05/23
 
-
 # Purpose:
-# Using data from Vaughn et al and from ARS to try to represent current GHG fluxes for study area
-# Then divide by leveed area
+# Using data from Vaughn et al to represent current GHG fluxes for study area
+# Then clip by leveed area
 
 # load raster and vector datasets
 
@@ -67,8 +64,10 @@ for (i in 1:nrow(vector_data)) {
     intersect_extent <- intersect(ext(polygon_vect), ext(raster_data))
     if (!is.null(intersect_extent)) {
       clipped_raster <- crop(raster_data, polygon_vect)
+      
       # Check if clipped raster is not NULL
       if (!is.null(clipped_raster)) {
+        
         # Check if clipped raster is not empty
         if (!any(is.na(values(clipped_raster)))) {
           clipped_rasters[[i]] <- clipped_raster
