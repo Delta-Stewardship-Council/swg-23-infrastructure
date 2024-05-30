@@ -89,16 +89,10 @@ library(sf)
 raster_data <- flux_1yr_M_OM_M
 
 # Read vector shape data
-vector_data <- leveeAreas[100, ]
+vector_data <- leveeAreas
 
-plot(leveeAreas[100, ])
-
-# Loop through each polygon in the vector data and clip the raster
-clipped_rasters <- list()
-for (i in 1:nrow(vector_data)) {
-  polygon <- vector_data[i, ]
-  plot(polygon)
-}
+# this plot demonstrates teh three datasets
+#plot(leveeAreas[100, ])
 
 
 test <- crop(raster_data, leveeAreas[100, ], mask = TRUE)
@@ -112,6 +106,8 @@ for (i in 1:nrow(vector_data)) {
   clipped_raster <- crop(raster_data, polygon)
   clipped_rasters[[i]] <- clipped_raster
 }
+
+
 
 # Process or save the clipped raster data as needed
 # For example, you can save each clipped raster to separate files
