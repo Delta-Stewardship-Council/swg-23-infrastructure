@@ -18,22 +18,10 @@ crs(flux_1yr_M_OM_M)
 
 leveeAreas <- read_sf("data-clean/shapefiles/fixedLevees/leveedAreas.shp")
 nrow(leveeAreas)
-plot(leveeAreas, labels="LMA")
-
-#remotes::install_github('r-tmap/tmap')
-library(tmap)
-
-tm_shape(leveeAreas) +
-  tm_polygons(col="gray")+
-  tm_compass(position = c("left", "bottom"))+
-  tm_scale_bar(position = c("left", "bottom"))+
-  tm_layout(main.title = "Polygons")+
-  tm_text("LMA", size="AREA")
-
+plot(leveeAreas)
 
 raster_proj <- st_crs(flux_1yr_M_OM_M)$epsg
 vector_proj <- st_crs(leveeAreas)$epsg
-
 
 plot(flux_1yr_M_OM_M)
 lines(leveeAreas)
@@ -45,26 +33,33 @@ raster_data <- flux_1yr_M_OM_M
 # rename vector shape data
 vector_data <- leveeAreas
 
+
+# Trying to clip the raster data to the leveed areas using a loop
+# Not getting any valid overlap!
+
 library(sf)
 library(terra)
 
-# Ensure vector data is valid and not empty
-vector_data <- vector_data[!st_is_empty(vector_data), ]
+library(raster)
+library(spatialEco)
 
-# # Convert sf object to SpatVector
-# vector_data_vect <- vect(vector_data)
+# Create a raster
+ras <- raster(nrows = 100, ncols = 80, xmn = 0, xmx = 1000, ymn = 0, ymx = 800)
+val <- runif(ncell(ras))
+values(ras) <- val
 
-# Use extract function to clip the raster with the polygons (does not need to be a SpatVector)
-clipped_rasters <- extract(raster_data, vector_data, fun = mean, na.rm=TRUE)
+# Create a polygon within the raster extent
+xym <- cbind(runif(3, 0, 1000), runif(3, 0, 800))
+p <- Polygons(list(Polygon(xym)), 1)
+sp <- SpatialPolygons(list(p))
+spdf <- SpatialPolygonsDataFrame(sp, data = data.frame(1))
 
+# Calculate zonal statistics using "spatialEco"
+z1 <- zonal.stats(spdf, ras, stats = "mean")
 
-# Need to merge clipped_rasters with vector data by LMA 
+# clipped_rasters now contains the results of the clipping operation
 
-
-
-
-
-
+#This modification checks if there are any non-NA values in the clipped raster using the any function, which should ensure the condition is interpretable as logical.
 
 
 
