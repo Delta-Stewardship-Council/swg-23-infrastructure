@@ -14,6 +14,9 @@ library(dplyr)
 vector_data_1 <- st_read("data-clean/shapefiles/fixedLevees/leveedAreas.shp")
 vector_data_2 <- st_read("data-raw/shapefiles/habitatDelta1977/i07_Habitat_Delta_1977.shp")
 
+plot(vector_data_2)
+
+
 # Ensure CRS alignment:
  
 if (st_crs(vector_data_1) != st_crs(vector_data_2)) {

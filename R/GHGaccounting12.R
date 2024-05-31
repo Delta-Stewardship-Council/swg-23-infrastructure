@@ -18,7 +18,7 @@ crs(flux_1yr_M_OM_M)
 
 leveeAreas <- read_sf("data-clean/shapefiles/fixedLevees/leveedAreas.shp")
 nrow(leveeAreas)
-plot(leveeAreas, labels="LMA")
+plot(leveeAreas)
 
 #remotes::install_github('r-tmap/tmap')
 library(tmap)
