@@ -3,6 +3,21 @@
 # the leveed area polygons. The end goal will be to find overlaping 
 # habitat types within each leveed area and quantifying this overlapping area.
 
+# SUMMARY
+# Shape file of interest: intersectionDF
+# Column metadata:
+# LMA =  levee area from the leveedAreas shape file
+# PM_LandTyp = habitat type of interest
+# Acres = area of the land type, already calculated
+# overlappedArea = our calculation of the overlapping area between the habitat of
+# interest and the leveed area (LMA)
+# lmaArea = area of the leveed area
+# geometry = geometry layer of **OVERLAPPING** habitat type and our leveed polygons
+# lmaGeometry = geometry layer of the leveed area
+
+# You'll want to focus on PM_LandTyp, overlappedArea, and geometry
+# These are the land types, overlapping acreages, and geometry of the overlapped areas
+
 library(sf)
 library(dplyr)
 library(tidyr)
@@ -15,8 +30,6 @@ library(ggplot2)
 # 2. Read in the natural habitat managed wetland polygons
 # 3. Per leveed area, find overlap to the wetland polygon
 # 4. Calculate the overlapped area
-
-
 
 ## Downloads Modern_Habitat_LandExtend_2016.shp from KNB
 knb_url <- "https://knb.ecoinformatics.org/knb/d1/mn/v2/object/urn%3Auuid%3A95d26b1e-0e44-46f0-8580-cabbc942fcb2"
@@ -42,18 +55,20 @@ leveedAreas <- st_read(file.path("data-clean", "shapefiles", "fixedLevees", "lev
 
 # Calculating overlap and the area 3, 4 -----------------------------------
 
-intersectionDF <- st_intersection(leveedAreasFixed, managedWetlands) %>% 
-  mutate(overlappedArea = units::set_units(st_area(intersectionDF), acre)) %>% 
-  full_join(data.frame(leveedAreasArea) %>% 
-              select(LMA, lmaGeometry = geometry, lmaArea), by = "LMA")
+leveedAreasArea <- leveedAreas %>% 
+  mutate(lmaArea = as.numeric(units::set_units(st_area(geometry), acre)))
+
+intersectionDF <- st_intersection(leveedAreas, managedWetlands) 
+
+intersectionDF <- intersectionDF %>% 
+    mutate(overlappedArea = units::set_units(st_area(intersectionDF), acre)) %>% 
+      full_join(data.frame(leveedAreasArea) %>% 
+                  select(LMA, lmaGeometry = geometry, lmaArea), by = "LMA")
 
 # Checking the calculations -----------------------------------------------
 # Each calculated overlap should be:
 # 1. Less than the full extent of the habitat type
 # 2. When summed across an LMA, be equal to or less than the total area of LMA
-
-leveedAreasArea <- leveedAreasFixed %>% 
-  mutate(lmaArea = as.numeric(units::set_units(st_area(geometry), acre)))
 
 combinedCheck <- intersectionDF %>% 
   mutate(lessThanLMA = as.numeric(overlappedArea) <= lmaArea,
@@ -67,7 +82,7 @@ apply(data.frame(combinedCheck)[, c("lessThanLMA", "lessThanHabitatAcres", "allL
 # All checks out.
 
 # Visualizing -------------------------------------------------------------
-leveedAreaPlot <- ggplot(leveedAreasFixed) +
+leveedAreaPlot <- ggplot(leveedAreas) +
   geom_sf(fill = NA, color = "grey70") +
   # guides(fill = "none") +
   theme_bw(base_size = 18) +
@@ -103,9 +118,18 @@ library(Cairo)
 # Loop through the list and save each plot
 
 for (i in seq_along(landTypePlots)) {
-  CairoPNG(file = file.path("data", "figures", "managedWetlands", paste0(names(landTypePlots)[i], ".png")), 
+  CairoPNG(file = file.path("figures", "managedWetlands", paste0(names(landTypePlots)[i], ".png")), 
            width = 15, height = 10, units = "in", res = 300)
   print(landTypePlots[[i]])
   dev.off()
 }
+
+# Saving the shapefile ----------------------------------------------------
+
+# NOT doing this because the file is excessively large, ~279 mb. Will need to simply
+# run this code to get the shape file of interest
+
+# st_write(intersectionDF, 
+#          file.path("data-clean", "shapefiles", "managedWetlands", "managedWetlands.shp"), 
+#          append = F)
 
