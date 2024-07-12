@@ -1,4 +1,4 @@
-# This scripts creates the format for probability levee failure data withing each levee ares based on tthe RAND prob of Failure data and the fixed levee island
+# This scripts creates the format for probability levee failure data withing each levee areas based on the RAND prob of Failure data and the fixed levee island
 
 
 # Load Packages ----
