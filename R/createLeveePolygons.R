@@ -155,6 +155,7 @@ snapCenterlines <- function(x, tolerance, minDistance = 0.1) {
 }
 
 drawLine <- function(x, y, xPosition = NULL, yPosition = NULL, returnPoints = F) {
+  library(patchwork)
   xPoint <- x %>% 
     st_boundary() %>% 
     st_cast("POINT")
@@ -369,4 +370,77 @@ st_extend_line <- function(line, distance, end = "BOTH")
   if (is.list(line)) newline <- sf::st_sfc(newline, crs = sf::st_crs(line))
   
   return(newline)
+}
+
+#' Read in a spatial layer from the ESRI REST API
+#' 
+#' @details
+#' Use the API Explorer if you are unfamiliar with building a query for ESRI's API
+#' I have only tested this with a geojson file, which is supported by `st_read`.
+#' 
+#'
+#' @param url The API url.
+#'
+#' @return
+#' @export
+#'
+#' @examples {
+#' readFromAPI("https://services2.arcgis.com/FiaPA4ga0iQKduv3/arcgis/rest/services/NLD2_PUBLIC_v1/FeatureServer/17/query?outFields=*&where=1%3D1&f=geojson")
+#' }
+readFromAPI <- function(url, query) {
+
+  # Does your query have at least outFields, where, and f? 
+  if (!all(c("outFields", "where", "f") %in% names(query))) 
+    stop("Your query should include at minimum: outFields, where, and f.", 
+         call. = F)
+  
+  # How long is the dataset?
+  lengthQuery <- httr::content(
+    httr::GET(url, 
+              query = c(query, 
+                        returnCountOnly = "true")), 
+    "text"
+  )
+  
+  length <- as.numeric(sub('.*"count":([0-9]+).*', '\\1', lengthQuery))
+  
+  if (length >= 1000) {
+    offset <- 0
+    data <- list()
+    
+    repeat {
+      queryParameters <- c(query,
+                           resultOffset = offset,
+                           resultRecordCount = 1000)
+      
+      response <- httr::GET(url, query = queryParameters)
+      
+      if (response$status_code == 200) {
+        parsedData <- httr::content(response, "text")
+        readData <- sf::st_read(parsedData, quiet = T)
+      } else {
+        stop(paste0("Check your link, failed to retrieve data. Starting offset was ", offset), call. = F)
+      }
+      
+      lengthData <- nrow(readData)
+      data <- c(data, list(readData))
+      
+      if (lengthData < 1000) {
+        data <- do.call(rbind, data)
+        break()
+      }
+      
+      offset <- offset + lengthData
+    }
+  } else {
+    response <- httr::GET(url, query = query)
+    
+    if (response$status_code == 200) {
+      parsedData <- httr::content(response, "text")
+      data <- sf::st_read(parsedData, quiet = T)
+    } else {
+      stop("Check your link, failed to retrieve data.", call. = F)
+    }
+  }
+  data
 }
