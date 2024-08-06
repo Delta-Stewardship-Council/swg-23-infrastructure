@@ -30,15 +30,14 @@ prob_fail_baseline <- prob_fail %>%
 # NOTE: THIS IS NOT A LOGIT STEP! THIS IS JUST TO HAVE AN EXAMPLE DATA TO WORK ON THE SHINY APP. THERE IS NOT DIRECT MATCH OF LEVEE AREA TO ISLANDS PRESERNTED IN THEN PROB OF FAILURE. 
 
 prob_fail_area <- leveed_areas %>% 
-  left_join(prob_fail_baseline, join_by(lma == island_or_tract)) %>% 
-  filter(!is.na(levee_failure))
+  left_join(prob_fail_baseline, join_by(lma == island_or_tract))
 
 
 plot(prob_fail_area["levee_failure"])
 
 
 # save mock data to use in example app ----
-write_sf(prob_fail_area, file.path("data-clean", "mock-data", "mock_prob_fail_levee_area.shp"))
+write_sf(prob_fail_area, file.path("data-clean", "shapefiles", "probFailure", "prob_fail_levee_area.shp"))
 
 
 
