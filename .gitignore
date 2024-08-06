@@ -110,4 +110,5 @@ data-raw/randModel/ref/New folder/ScenarioData.dat
 data-raw/randModel/ref/ProportionWarned.dat
 data-raw/randModel/ref/ScenarioData.dat
 
-
+# Raster data from Invest 
+data-raw/rasters/*
