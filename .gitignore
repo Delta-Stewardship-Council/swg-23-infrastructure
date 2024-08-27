@@ -112,3 +112,6 @@ data-raw/randModel/ref/ScenarioData.dat
 
 # Raster data from Invest 
 data-raw/rasters/*
+
+# Structure data from NSI
+data-raw/gpkg/nsi_2022_06.gpkg
