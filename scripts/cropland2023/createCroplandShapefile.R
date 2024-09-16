@@ -4,8 +4,6 @@ library(rvest)
 library(httr)
 library(terra)
 library(sf)
-library(ggplot2)
-library(tidyterra)
 
 # Step 1: Scrape the download site for the newest dataset
 downloadUrl <- "https://www.nass.usda.gov/Research_and_Science/Cropland/Release/"

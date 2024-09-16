@@ -375,62 +375,128 @@ st_extend_line <- function(line, distance, end = "BOTH")
 #' Read in a spatial layer from the ESRI REST API
 #' 
 #' @details
-#' Use the API Explorer if you are unfamiliar with building a query for ESRI's API
-#' I have only tested this with a geojson file, which is supported by `st_read`.
+#' From a FeatureServer or MapServer, the API url should be of a layer of interest, i.e.,
+#' click on the layer that you would like to pull from the server. This should append
+#' your link with a "/#/query" at the end of your url.
+#' 
+#' For the 'url' argument, use the API Explorer if you are unfamiliar with building a query for ESRI's API.
+#' See the example for my general starting point.
 #' 
 #'
-#' @param url The API url.
+#' @param url The API url. This can be from a FeatureServer or a MapServer. Has to be of a layer of interest.
+#' @param query A query. See details.
+#' @param maxRetries Number of retries if there is an error in pulling the data. Defaults to 3 tries.
+#' @param retryDelay Delay between retries, defaults to 2 seconds.
 #'
 #' @return
 #' @export
 #'
 #' @examples {
 #' readFromAPI("https://services2.arcgis.com/FiaPA4ga0iQKduv3/arcgis/rest/services/NLD2_PUBLIC_v1/FeatureServer/17/query?outFields=*&where=1%3D1&f=geojson")
+#' 
+#' # Building a query:
+#' queryParameters <- list(outFields = "*", where = "1=1", f = "geojson")
+#' # here, outFields = "*" indicates return all columns
+#' # where = "1=1" means no filtering, return all rows
+#' # f = "geojson" is the format of the returned data from the server
 #' }
-readFromAPI <- function(url, query) {
-
-  # Does your query have at least outFields, where, and f? 
+readFromAPI <- function(url, query, maxRetries = 3, retryDelay = 2) {
   if (!all(c("outFields", "where", "f") %in% names(query))) 
-    stop("Your query should include at minimum: outFields, where, and f.", 
-         call. = F)
+    stop("Your query should include at minimum: outFields, where, and f.", call. = F)
   
-  # How long is the dataset?
-  lengthQuery <- httr::content(
-    httr::GET(url, 
-              query = c(query, 
-                        returnCountOnly = "true")), 
-    "text"
-  )
+  lengthQuery <- tryCatch({
+    httr::content(httr::GET(url, query = c(query, returnCountOnly = "true")), "text")
+  }, error = function(e) {
+    stop(paste("Error getting count:", e$message), call. = F)
+  })
   
   length <- as.numeric(sub('.*"count":([0-9]+).*', '\\1', lengthQuery))
+  cat("Total number of features:", length, "\n")
   
   if (length >= 1000) {
     offset <- 0
     data <- list()
+    failed_offsets <- list()
     
-    repeat {
+    while (offset < length) {
+      cat("Fetching features", offset + 1, "to", min(offset + 1000, length), "at", round(offset / length, 2) * 100, "%\n")
+      
       queryParameters <- c(query,
                            resultOffset = offset,
                            resultRecordCount = 1000)
       
-      response <- httr::GET(url, query = queryParameters)
-      
-      if (response$status_code == 200) {
-        parsedData <- httr::content(response, "text")
-        readData <- sf::st_read(parsedData, quiet = T)
-      } else {
-        stop(paste0("Check your link, failed to retrieve data. Starting offset was ", offset), call. = F)
+      success <- FALSE
+      for (retry in 1:maxRetries) {
+        tryCatch({
+          response <- httr::GET(url, query = queryParameters)
+          
+          if (response$status_code == 200) {
+            
+            parsedData <- httr::content(response, "text")
+            readData <- sf::st_read(parsedData, quiet = T)
+            
+            lengthData <- nrow(readData)
+            data <- c(data, list(readData))
+            
+            offset <- offset + lengthData
+            cat("Successfully fetched", lengthData, "features\n")
+            success <- TRUE
+            break  # Exit the retry loop if successful
+          } else {
+            stop(paste("HTTP error:", response$status_code))
+          }
+        }, error = function(e) {
+          cat("Error occurred at offset", offset, ":", e$message, "\n")
+          if (retry < maxRetries) {
+            cat("Retry", retry, "of", maxRetries, ". Retrying in", retryDelay, "seconds...\n")
+            Sys.sleep(retryDelay)
+          } else {
+            cat("Max retries reached. Moving to next block.\n")
+          }
+        })
+        
+        if (success) break  # Exit the retry loop if successful
       }
       
-      lengthData <- nrow(readData)
-      data <- c(data, list(readData))
-      
-      if (lengthData < 1000) {
-        data <- do.call(rbind, data)
-        break()
+      if (!success) {
+        failed_offsets <- c(failed_offsets, list(offset))
+        offset <- offset + 1000  # Move to next block
       }
-      
-      offset <- offset + lengthData
+    }
+    
+    # Retry failed offsets
+    if (length(failed_offsets) > 0) {
+      cat("Retrying failed blocks...\n")
+      for (failed_offset in failed_offsets) {
+        cat("Retrying offset", failed_offset, "\n")
+        queryParameters <- c(query,
+                             resultOffset = failed_offset,
+                             resultRecordCount = 1000)
+        
+        tryCatch({
+          response <- httr::GET(url, query = queryParameters)
+          
+          if (response$status_code == 200) {
+            parsedData <- httr::content(response, "text")
+            readData <- sf::st_read(parsedData, quiet = T)
+            
+            lengthData <- nrow(readData)
+            data <- c(data, list(readData))
+            
+            cat("Successfully fetched", lengthData, "features from failed block\n")
+          } else {
+            cat("Failed to retrieve block at offset", failed_offset, "during retry\n")
+          }
+        }, error = function(e) {
+          cat("Error during retry at offset", failed_offset, ":", e$message, "\n")
+        })
+      }
+    }
+    
+    if (length(data) > 0) {
+      data <- dplyr::bind_rows(data)
+    } else {
+      stop("No data was successfully retrieved", call. = F)
     }
   } else {
     response <- httr::GET(url, query = query)
@@ -442,5 +508,7 @@ readFromAPI <- function(url, query) {
       stop("Check your link, failed to retrieve data.", call. = F)
     }
   }
+  
+  cat("Final dataset has", nrow(data), "rows\n")
   data
 }
