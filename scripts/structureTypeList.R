@@ -32,11 +32,11 @@ delta_bbox <- st_bbox(levee_4326)
 
 nsi_delta <- st_crop(nsi, delta_bbox)
 
-write_sf(nsi_delta, "data-clean/nsi_2022_delta_area.shp")
+write_sf(nsi_delta, "data-clean/shapefiles/nationalStructureInventory/nsi_2022_delta_area.shp")
 
 
-## reading saved shapefile
-delta_nsi_shp <- read_sf("data-clean/nsi_2022_delta_area.shp")
+## reading data as a shapefile
+delta_nsi_shp <- read_sf("data-clean/shapefiles/nationalStructureInventory/nsi_2022_delta_area.shp")
 
 
 ## Creating table with structure type and its full name provided by NSI documentation online.
@@ -64,3 +64,12 @@ delta_occtype <- delta_nsi_shp %>%
   arrange(occupancy_type)
 
 write_csv(delta_occtype, "data-clean/nsi_2022_06_occupancy_type.csv")
+
+
+## structures with values
+structure_value <- delta_nsi_shp %>% 
+  select(occtype, val_struct, val_cont, val_vehic) %>% 
+  st_drop_geometry() %>% 
+  distinct()
+
+
