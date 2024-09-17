@@ -115,3 +115,5 @@ data-raw/rasters/*
 
 # Structure data from NSI
 data-raw/gpkg/nsi_2022_06.gpkg
+data-raw/shapefiles/croplandDataLayer/2023_30m_cdls.tif
+data-raw/shapefiles/croplandDataLayer/2023_30m_cdls.tif.ovr
