@@ -431,9 +431,14 @@ readFromAPI <- function(url, query, maxRetries = 3, retryDelay = 2) {
           response <- httr::GET(url, query = queryParameters)
           
           if (response$status_code == 200) {
-            
             parsedData <- httr::content(response, "text")
             readData <- sf::st_read(parsedData, quiet = T)
+            
+            # Check for columns with all NAs; change them to logical
+            whereNAs <- vapply(readData, function(x) all(is.na(x)), logical(1))
+            if (any(whereNAs)) {
+              readData[whereNAs] <- lapply(st_drop_geometry(readData[whereNAs]), as.logical)
+            }
             
             lengthData <- nrow(readData)
             data <- c(data, list(readData))
@@ -477,8 +482,16 @@ readFromAPI <- function(url, query, maxRetries = 3, retryDelay = 2) {
           response <- httr::GET(url, query = queryParameters)
           
           if (response$status_code == 200) {
+            
+            # Read the processed JSON data
             parsedData <- httr::content(response, "text")
             readData <- sf::st_read(parsedData, quiet = T)
+            
+            # Check for columns with all NAs; change them to logical
+            whereNAs <- vapply(readData, function(x) all(is.na(x)), logical(1))
+            if (any(whereNAs)) {
+              readData[whereNAs] <- lapply(st_drop_geometry(readData[whereNAs]), as.logical)
+            }
             
             lengthData <- nrow(readData)
             data <- c(data, list(readData))
@@ -494,7 +507,12 @@ readFromAPI <- function(url, query, maxRetries = 3, retryDelay = 2) {
     }
     
     if (length(data) > 0) {
-      data <- dplyr::bind_rows(data)
+      data <- tryCatch({
+        dplyr::bind_rows(data)
+      }, error = function(e) {
+        cat(e$message, "\nReturning the fully list instead")
+        data
+      })
     } else {
       stop("No data was successfully retrieved", call. = F)
     }
@@ -504,11 +522,15 @@ readFromAPI <- function(url, query, maxRetries = 3, retryDelay = 2) {
     if (response$status_code == 200) {
       parsedData <- httr::content(response, "text")
       data <- sf::st_read(parsedData, quiet = T)
+      whereNAs <- vapply(data, function(x) all(is.na(x)), logical(1))
+      if (any(whereNAs)) {
+        data[whereNAs] <- lapply(st_drop_geometry(data[whereNAs]), as.logical)
+      }
+      data
     } else {
       stop("Check your link, failed to retrieve data.", call. = F)
     }
   }
   
-  cat("Final dataset has", nrow(data), "rows\n")
   data
 }
