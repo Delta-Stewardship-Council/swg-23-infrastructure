@@ -8,7 +8,6 @@ library(sf)
 
 
 # Read data ----
-
 prob_fail <- read_csv(file.path("data-clean", "randProbFailure", "probFailure.csv")) %>% 
   clean_names()
 
@@ -27,7 +26,7 @@ prob_fail_baseline <- prob_fail %>%
 
 # Assigning a prob of failure to a each levee ares ----
 
-# NOTE: THIS IS NOT A LOGIT STEP! THIS IS JUST TO HAVE AN EXAMPLE DATA TO WORK ON THE SHINY APP. THERE IS NOT DIRECT MATCH OF LEVEE AREA TO ISLANDS PRESERNTED IN THEN PROB OF FAILURE. 
+# NOTE: THERE IS NOT DIRECT MATCH OF LEVEE AREA TO ISLANDS PRESERNTED IN THEN PROB OF FAILURE. 
 
 prob_fail_area <- leveed_areas %>% 
   left_join(prob_fail_baseline, join_by(lma == island_or_tract))
@@ -36,7 +35,7 @@ prob_fail_area <- leveed_areas %>%
 plot(prob_fail_area["levee_failure"])
 
 
-# save mock data to use in example app ----
+# save data to use in app ----
 write_sf(prob_fail_area, file.path("data-clean", "shapefiles", "probFailure", "prob_fail_levee_area.shp"))
 
 
