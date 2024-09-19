@@ -7,7 +7,7 @@ library(dyplr)
 ## read data ---
 
 # structure data
-structue_data <- st_read(file.path("data-clean", "shapefiles", "nationalStructureInventory", "nsi_2022_delta_area.shp"))
+structure_data <- st_read(file.path("data-clean", "shapefiles", "nationalStructureInventory", "nsi_2022_delta_area.shp"))
 
 # levee areas
 levee_areas <- st_read(file.path("data-clean", "shapefiles", "fixedLevees", "leveedAreas.shp")) %>% 
@@ -17,8 +17,8 @@ levee_areas <- st_read(file.path("data-clean", "shapefiles", "fixedLevees", "lev
 plot(levee_areas["geometry"])
 
 ## select the variables we need from structure data ----
-structure_value <- structue_data %>% 
-  select(cbfips, occtype, sqft, val_cont, val_vehic, val_struct) %>% 
+structure_value <- structure_data %>% 
+  select(fd_id, cbfips, occtype, sqft, val_cont, val_vehic, val_struct) %>% 
   mutate(total_value = sum(val_cont, val_struct, val_vehic))
 
 ## Check for crs
@@ -26,17 +26,17 @@ st_crs(levee_areas)
 st_crs(structure_value)
 
 ## transforming structur data to California alberts
-structure_nad83 <- st_transform(structue_value,
+structure_nad83 <- st_transform(structure_value,
                                 crs = 3310)
 st_crs(structure_nad83)
 
 ## Calculate structures per leveed polygon, calculate overlap ----
 structure_per_levee <- st_intersection(structure_nad83, levee_areas) 
   
-total_value_area <- structur_per_levee %>% 
+total_value_area <- structure_per_levee %>% 
+  st_drop_geometry() %>% 
   group_by(LMA) %>% 
-  summarise(geometry = st_union(geometry),
-            value_area = sum(total_value))
+  summarise(structure_value_area = sum(total_value))
 ## Note that not all LM have a structure value. There are only 93 obs in total_value_area df.
 
 ## What are the missing LMA ares adn why?
@@ -50,6 +50,14 @@ missing_lma <- levee_areas %>%
 plot(total_value_area["value_area"])
 ## Most of them are island that maybe do not have structure data?
 
-## The value plots buy point and not bue polygon. 
+## matching each total value to a polygon instead of a point
+
+total_value_polygon <- levee_areas %>% 
+  left_join(total_value_area, by = "LMA")
+
+plot(total_value_polygon["structure_value_area"])
+
+## Save shapefile with total value per area
+st_write(total_value_polygon, "data-clean/shapefiles/nationalStructureInventory/nsi_2022_total_value_levee_area.shp")
 
 
