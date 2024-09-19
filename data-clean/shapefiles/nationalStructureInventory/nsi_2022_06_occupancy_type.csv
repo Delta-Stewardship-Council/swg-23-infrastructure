@@ -1,0 +1,39 @@
+occupancy_type,description
+AGR1,Agriculture Buildings
+COM1,Retail
+COM10,Garage
+COM2,Wholesale
+COM3,Personal and Repair Services
+COM4,Professional or Technical Services
+COM5,Bank
+COM6,Hospital
+COM7,Medical Office
+COM8,Entertainment or Recreational
+COM9,Theater
+EDU1,School
+EDU2,"College, University"
+GOV1,Government Services
+GOV2,Emergency Response Services
+IND1,Heavy Industrial
+IND2,Light Industrial
+IND3,"Food, Drug or Chemical Processing"
+IND4,Metals or Minerals Processing
+IND5,High Technology
+IND6,Construction
+REL1,Church
+RES1-1SNB,NA
+RES1-1SWB,NA
+RES1-2SNB,NA
+RES1-2SWB,NA
+RES1-3SNB,NA
+RES1-3SWB,NA
+RES2,Mobile Home
+RES3A,NA
+RES3B,NA
+RES3C,NA
+RES3D,NA
+RES3E,NA
+RES3F,NA
+RES4,Hotel or Motel
+RES5,Institutional Dormitory
+RES6,Nursing Home
