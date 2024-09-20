@@ -4,6 +4,7 @@
 library(tidyverse)
 library(leaflet)
 library(sf)
+library(htmltools)
 
 ## Read data
 
@@ -137,3 +138,56 @@ leaflet::leaflet(soc_vul) %>%
             title = "Social Vulnerability Index",
             position = "bottomleft") %>% 
   setView(lat=38.2, lng=-121.7, zoom=9)
+
+
+
+
+## One map with all layers
+leaflet() %>%
+  addProviderTiles(providers$CartoDB.Positron, 
+                   group = "Grey background") %>%
+  addProviderTiles("Esri.WorldImagery", 
+                   group = "Imagery") %>%
+  addPolygons(data = soc_vul,
+              group = "Social Vulnerability Index",
+              fillColor = ~soc_vul_pal(RPL_THEMES),
+              label = ~htmlEscape(
+                paste("SOVI Index:", RPL_THEMES)),
+              # label = soc_vul_labs,
+              stroke = TRUE,
+              fillOpacity = 0.6, 
+              color="black", # polygon border color
+              weight=0.8, ) %>% # polygon border weight
+  # addLegend(pal = soc_vul_pal,
+  #           values = ~RPL_THEMES,
+  #           opacity = 0.6,
+  #           title = "Index",
+  #           position = "bottomleft") %>% 
+  addPolygons(data = prob_fail_w84,
+              group = "Probability of Failure",
+              fillColor = ~prob_fail_pal(lev_flr),
+              # label = soc_vul_labs,
+              stroke = TRUE,
+              fillOpacity = 0.6, 
+              color="black", # polygon border color
+              weight=0.8, ) %>% # polygon border weight
+  addLegend(group = "Probability of Failure",
+            pal = prob_fail_pal,
+            values = ~lev_flr,
+            opacity = 0.6,
+            title = "Delta Levee Probability of Failure",
+            position = "bottomleft") %>%
+  addLayersControl(
+    baseGroups = c("Grey background", "Imagery"),
+    overlayGroups = c("Social Vulnerability Index",
+                      "Probability of Failure"),
+    options = layersControlOptions(collapsed = FALSE)) %>%
+  # hide these groups by default
+  hideGroup(c("Social Vulnerability Index",
+              "Probability of Failure")) %>% 
+  setView(lat=38.2, lng=-121.7, zoom=9)
+  
+
+
+
+
