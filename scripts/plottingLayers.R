@@ -13,7 +13,7 @@ st_crs(prob_fail)
 prob_fail_w84 <- prob_fail %>% 
   st_transform('+proj=longlat +datum=WGS84')
 
-structure_value <- st_read("data-clean/shapefiles/nationalStructureInventory/nsi_2022_total_value_levee_area.shp")%>%
+structure_value <- st_read("data-clean/shapefiles/nationalStructureInventory/nsi_2024_total_value_levee_area.shp")%>%
   st_transform('+proj=longlat +datum=WGS84')
 
 managed_wetlands <- st_read("data-clean/shapefiles/managedWetlands/managedWetlands.shp") %>% 
@@ -48,16 +48,6 @@ managed_wetlands_pal <- colorFactor(
 
 ## Croplands
 unique(croplands$Clss_Nm)
-
-## there are 74 types of croplands! To hard to plot them all on a map. Trinh provided a list with categories to clasify each crop type.
-crop_cat <- read_csv("data-raw/csvFiles/delta_cropland_crop_type.csv") %>% 
-  ## filtering our 2 types (Shrubland & Barren) that name is repeated to avoid duplicates. Choosing the nonCrop category over nlcdDerivedClasses.
-  filter(!code %in% c(131, 152))
-
-croplands_complete <- croplands %>% 
-  left_join(crop_cat, by = join_by(Clss_Nm == name))
-
-unique(croplands_complete$type) ## 6 different types of crops
 
 crops_pal <- colorFactor(
   palette = rainbow,
