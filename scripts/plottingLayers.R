@@ -28,128 +28,60 @@ soc_vul <- st_read("data-clean/shapefiles/leveeLSDayPopWeightSVI/leveeLSDayPopWe
 
 ## Even though all layers where initially in CA Albers, Leaflet was giving me a warning about the need to re project into '+proj=longlat +datum=WGS84'. Now all data layers have been converted to the projection Leaflet likes.
 
-## Plots
+## color pallet ----
 
 ## Probability of Failure
 
-## color pallet
 prob_fail_pal <- colorNumeric(
   palette = "viridis", 
   domain = prob_fail_w84$lev_flr)
   # na.color = "gray")
 
-leaflet::leaflet(prob_fail_w84) %>%
-  addProviderTiles("CartoDB.Positron") %>%
-  addPolygons(data = prob_fail_w84,
-              fillColor = ~prob_fail_pal(lev_flr),
-              # label = soc_vul_labs,
-              stroke = TRUE,
-              fillOpacity = 0.6, 
-              color="black", # polygon border color
-              weight=0.8, ) %>% # polygon border weight
-  # addPolygons(data = structure_value,
-  #             fillColor = "gray",
-  #             fillOpacity = 0.4) %>%  ## adds structure value polygon on top
-  addLegend(pal = prob_fail_pal,
-            values = ~lev_flr,
-            opacity = 0.6,
-            title = "Delta Levee Probability of Failure",
-            position = "bottomleft") %>% 
-  setView(lat=38.2, lng=-121.7, zoom=9)
-
-
-
-## Structure values
-
-## color pallet
-structure_value_pal <- colorNumeric(
-  palette = "viridis", 
-  domain = structure_value$strct__)
-# na.color = "gray")
-
-leaflet::leaflet(structure_value) %>%
-  addProviderTiles("CartoDB.Positron") %>%
-  addPolygons(data = structure_value,
-              fillColor = ~structure_value_pal(strct__),
-              # label = soc_vul_labs,
-              stroke = TRUE,
-              fillOpacity = 0.6, 
-              color="black", # polygon border color
-              weight=0.8, ) %>% # polygon border weight
-  addLegend(pal = structure_value_pal,
-            values = ~strct__,
-            opacity = 0.6,
-            title = "Value ($) of all structures in a levee area",
-            position = "bottomleft") %>% 
-  setView(lat=38.2, lng=-121.7, zoom=9)
-
-
 ## Managed Wetlands
 rainbow <- c("#ff0000", "#ff5300", "#ffa500", "#ffd200", "#ffff00", "#80c000", "#008000", "#004080", "#0000ff", "#2600c1", "#4b0082")
 
-## color pallet
+
 managed_wetlands_pal <- colorFactor(
   palette = rainbow,
   domain  = managed_wetlands$PM_LndT)
 # na.color = "gray")
 
-leaflet::leaflet(managed_wetlands) %>%
-  addProviderTiles("CartoDB.Positron") %>%
-  addPolygons(data = managed_wetlands,
-              fillColor = ~managed_wetlands_pal(PM_LndT),
-              # label = soc_vul_labs,
-              stroke = TRUE,
-              fillOpacity = 0.6, 
-              color="black", # polygon border color
-              weight=0.8, ) %>% # polygon border weight
-  addLegend(pal = managed_wetlands_pal,
-            values = ~PM_LndT,
-            opacity = 0.6,
-            title = "Test",
-            position = "bottomleft") %>%
-  setView(lat=38.2, lng=-121.7, zoom=9)
-
-
 ## Croplands
 unique(croplands$Clss_Nm)
 
-## there are 74 types of croplands! To hard to plot them all on a map. Consulting the group about grouping them.
+## there are 74 types of croplands! To hard to plot them all on a map. Trinh provided a list with categories to clasify each crop type.
+crop_cat <- read_csv("data-raw/csvFiles/delta_cropland_crop_type.csv") %>% 
+  ## filtering our 2 types (Shrubland & Barren) that name is repeated to avoid duplicates. Choosing the nonCrop category over nlcdDerivedClasses.
+  filter(!code %in% c(131, 152))
+
+croplands_complete <- croplands %>% 
+  left_join(crop_cat, by = join_by(Clss_Nm == name))
+
+unique(croplands_complete$type) ## 6 different types of crops
+
+crops_pal <- colorFactor(
+  palette = rainbow,
+  domain  = croplands_complete$type)
 
 ## Social Vulnerability
 
-## color pallet
 soc_vul_pal <- colorNumeric(
   palette = "viridis", 
   domain = soc_vul$RPL_THEMES)
 # na.color = "gray")
 
-leaflet::leaflet(soc_vul) %>%
-  addProviderTiles("CartoDB.Positron") %>%
-  addPolygons(data = soc_vul,
-              fillColor = ~soc_vul_pal(RPL_THEMES),
-              # label = soc_vul_labs,
-              stroke = TRUE,
-              fillOpacity = 0.6, 
-              color="black", # polygon border color
-              weight=0.8, ) %>% # polygon border weight
-  addLegend(pal = soc_vul_pal,
-            values = ~RPL_THEMES,
-            opacity = 0.6,
-            title = "Social Vulnerability Index",
-            position = "bottomleft") %>% 
-  setView(lat=38.2, lng=-121.7, zoom=9)
 
-
-
-
-## One map with all layers
+## Plot ----
+## One map with all layers ----
 leaflet() %>%
+  ## add tiles
   addProviderTiles(providers$CartoDB.Positron, 
                    group = "Grey background") %>%
   addProviderTiles("Esri.WorldImagery", 
                    group = "Imagery") %>%
+  ## Add all polygon layers
   addPolygons(data = soc_vul,
-              group = "Social Vulnerability Index",
+              group = "Social Vulnerability",
               fillColor = ~soc_vul_pal(RPL_THEMES),
               label = ~htmlEscape(
                 paste("SOVI Index:", RPL_THEMES)),
@@ -158,11 +90,6 @@ leaflet() %>%
               fillOpacity = 0.6, 
               color="black", # polygon border color
               weight=0.8, ) %>% # polygon border weight
-  # addLegend(pal = soc_vul_pal,
-  #           values = ~RPL_THEMES,
-  #           opacity = 0.6,
-  #           title = "Index",
-  #           position = "bottomleft") %>% 
   addPolygons(data = prob_fail_w84,
               group = "Probability of Failure",
               fillColor = ~prob_fail_pal(lev_flr),
@@ -171,20 +98,52 @@ leaflet() %>%
               fillOpacity = 0.6, 
               color="black", # polygon border color
               weight=0.8, ) %>% # polygon border weight
+  addPolygons(data = managed_wetlands,
+              group = "Habitat Type",
+              fillColor = ~managed_wetlands_pal(PM_LndT),
+              # label = soc_vul_labs,
+              stroke = TRUE,
+              fillOpacity = 0.6, 
+              color="black", # polygon border color
+              weight=0.8, ) %>% # polygon border weight
+  addPolygons(data = croplands_complete,
+              group = "Croplands",
+              fillColor = ~crops_pal(type),
+              # label = soc_vul_labs,
+              stroke = TRUE,
+              fillOpacity = 0.6, 
+              color="black", # polygon border color
+              weight=0.8, ) %>% # polygon border weight
+  ## Legend layers
+  addLegend(group = "Social Vulnerability",
+            pal = soc_vul_pal,
+            values = soc_vul$RPL_THEMES,
+            opacity = 0.6,
+            title = "Index",
+            position = "bottomleft") %>%
   addLegend(group = "Probability of Failure",
             pal = prob_fail_pal,
-            values = ~lev_flr,
+            values = prob_fail_w84$lev_flr,
             opacity = 0.6,
-            title = "Delta Levee Probability of Failure",
+            title = "Probability of Failure",
             position = "bottomleft") %>%
+  addLegend(group = "Habitat Type",
+            pal = managed_wetlands_pal,
+            values = managed_wetlands$PM_LndT,
+            opacity = 0.6,
+            title = "Habitat Type",
+            position = "bottomleft") %>% 
   addLayersControl(
     baseGroups = c("Grey background", "Imagery"),
-    overlayGroups = c("Social Vulnerability Index",
-                      "Probability of Failure"),
+    overlayGroups = c("Social Vulnerability",
+                      "Probability of Failure",
+                      "Managed Wetlands"),
     options = layersControlOptions(collapsed = FALSE)) %>%
   # hide these groups by default
-  hideGroup(c("Social Vulnerability Index",
-              "Probability of Failure")) %>% 
+  hideGroup(c("Social Vulnerability",
+              "Probability of Failure",
+              "Habitat Type",
+              "Croplands")) %>% 
   setView(lat=38.2, lng=-121.7, zoom=9)
   
 
