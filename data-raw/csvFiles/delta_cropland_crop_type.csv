@@ -1,0 +1,134 @@
+code,name,type
+1,Corn,crop
+2,Cotton,crop
+3,Rice,crop
+4,Sorghum,crop
+5,Soybeans,crop
+6,Sunflower,crop
+10,Peanuts,crop
+11,Tobacco,crop
+12,Sweet Corn,crop
+13,Pop or Orn Corn,crop
+14,Mint,crop
+21,Barley,crop
+22,Durum Wheat,crop
+23,Spring Wheat,crop
+24,Winter Wheat,crop
+25,Other Small Grains,crop
+26,Dbl Crop WinWht/Soybeans,crop
+27,Rye,crop
+28,Oats,crop
+29,Millet,crop
+30,Speltz,crop
+31,Canola,crop
+32,Flaxseed,crop
+33,Safflower,crop
+34,Rape Seed,crop
+35,Mustard,crop
+36,Alfalfa,crop
+37,Other Hay/Non Alfalfa,crop
+38,Camelina,crop
+39,Buckwheat,crop
+41,Sugarbeets,crop
+42,Dry Beans,crop
+43,Potatoes,crop
+44,Other Crops,crop
+45,Sugarcane,crop
+46,Sweet Potatoes,crop
+47,Misc Vegs & Fruits,crop
+48,Watermelons,crop
+49,Onions,crop
+50,Cucumbers,crop
+51,Chick Peas,crop
+52,Lentils,crop
+53,Peas,crop
+54,Tomatoes,crop
+55,Caneberries,crop
+56,Hops,crop
+57,Herbs,crop
+58,Clover/Wildflowers,crop
+59,Sod/Grass Seed,crop
+60,Switchgrass,crop
+61,Fallow/Idle Cropland,nonCrop
+63,Forest,nonCrop
+64,Shrubland,nonCrop
+65,Barren,nonCrop
+66,Cherries,crop2
+67,Peaches,crop2
+68,Apples,crop2
+69,Grapes,crop2
+70,Christmas Trees,crop2
+71,Other Tree Crops,crop2
+72,Citrus,crop2
+74,Pecans,crop2
+75,Almonds,crop2
+76,Walnuts,crop2
+77,Pears,crop2
+81,Clouds/No Data,others
+82,Developed,others
+83,Water,others
+87,Wetlands,others
+88,Nonag/Undefined,others
+92,Aquaculture,others
+111,Open Water,nlcdDerivedClasses
+112,Perennial Ice/Snow,nlcdDerivedClasses
+121,Developed/Open Space,nlcdDerivedClasses
+122,Developed/Low Intensity,nlcdDerivedClasses
+123,Developed/Med Intensity,nlcdDerivedClasses
+124,Developed/High Intensity,nlcdDerivedClasses
+131,Barren,nlcdDerivedClasses
+141,Deciduous Forest,nlcdDerivedClasses
+142,Evergreen Forest,nlcdDerivedClasses
+143,Mixed Forest,nlcdDerivedClasses
+152,Shrubland,nlcdDerivedClasses
+176,Grassland/Pasture,nlcdDerivedClasses
+190,Woody Wetlands,nlcdDerivedClasses
+195,Herbaceous Wetlands,nlcdDerivedClasses
+204,Pistachios,crop3
+205,Triticale,crop3
+206,Carrots,crop3
+207,Asparagus,crop3
+208,Garlic,crop3
+209,Cantaloupes,crop3
+210,Prunes,crop3
+211,Olives,crop3
+212,Oranges,crop3
+213,Honeydew Melons,crop3
+214,Broccoli,crop3
+215,Avocados,crop3
+216,Peppers,crop3
+217,Pomegranates,crop3
+218,Nectarines,crop3
+219,Greens,crop3
+220,Plums,crop3
+221,Strawberries,crop3
+222,Squash,crop3
+223,Apricots,crop3
+224,Vetch,crop3
+225,Dbl Crop WinWht/Corn,crop3
+226,Dbl Crop Oats/Corn,crop3
+227,Lettuce,crop3
+228,Dbl Crop Triticale/Corn,crop3
+229,Pumpkins,crop3
+230,Dbl Crop Lettuce/Durum Wht,crop3
+231,Dbl Crop Lettuce/Cantaloupe,crop3
+232,Dbl Crop Lettuce/Cotton,crop3
+233,Dbl Crop Lettuce/Barley,crop3
+234,Dbl Crop Durum Wht/Sorghum,crop3
+235,Dbl Crop Barley/Sorghum,crop3
+236,Dbl Crop WinWht/Sorghum,crop3
+237,Dbl Crop Barley/Corn,crop3
+238,Dbl Crop WinWht/Cotton,crop3
+239,Dbl Crop Soybeans/Cotton,crop3
+240,Dbl Crop Soybeans/Oats,crop3
+241,Dbl Crop Corn/Soybeans,crop3
+242,Blueberries,crop3
+243,Cabbage,crop3
+244,Cauliflower,crop3
+245,Celery,crop3
+246,Radishes,crop3
+247,Turnips,crop3
+248,Eggplants,crop3
+249,Gourds,crop3
+250,Cranberries,crop3
+254,Dbl Crop Barley/Soybeans,crop3
