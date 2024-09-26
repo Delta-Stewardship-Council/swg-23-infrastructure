@@ -55,11 +55,11 @@ plot(total_value_area["value_area"])
 total_value_polygon <- levee_areas %>% 
   left_join(total_value_area, by = "LMA") %>% 
   # Multiplying value to bring it account for inflation and bring it to 2024 dollar value
-  mutate(total_value_2024 = structure_value_area*1.14)
+  mutate(total_value_trill = (structure_value_area*1.14)/10^12)
 
 plot(total_value_polygon["structure_value_area"])
 
 ## Save shapefile with total 2024 value per area
-st_write(total_value_polygon, "data-clean/shapefiles/nationalStructureInventory/nsi_2024_total_value_levee_area.shp")
+write_sf(total_value_polygon, "data-clean/shapefiles/nationalStructureInventory/nsi_2024_total_value_levee_area.shp", overwrite = TRUE)
 
 
