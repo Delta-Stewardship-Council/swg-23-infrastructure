@@ -1,0 +1,192 @@
+"class","description","ID","subclass","waterUseFactor"
+"G","Grain and hay crops",1,"Barley",NA
+"G","Grain and hay crops",2,"Wheat",NA
+"G","Grain and hay crops",3,"Oats",NA
+"G","Grain and hay crops",6,"Miscellaneous grain and hay",NA
+"G","Grain and hay crops",7,"Mixed grain and hay",NA
+"R","Rice",1,"Rice",NA
+"R","Rice",2,"Wild Rice",NA
+"F","Field crops",1,"Cotton",NA
+"F","Field crops",2,"Safflower",NA
+"F","Field crops",3,"Flax",NA
+"F","Field crops",4,"Hops",NA
+"F","Field crops",5,"Sugar beets",NA
+"F","Field crops",6,"Corn (field & sweet)",NA
+"F","Field crops",7,"Grain sorghum",NA
+"F","Field crops",8,"Sudan",NA
+"F","Field crops",9,"Castor beans",NA
+"F","Field crops",10,"Beans (dry)",NA
+"F","Field crops",11,"Miscellaneous field",NA
+"F","Field crops",12,"Sunflowers",NA
+"F","Field crops",13,"Hybrid sorghum/sudan",NA
+"F","Field crops",14,"Millet",NA
+"F","Field crops",15,"Sugar cane",NA
+"F","Field crops",16,"Corn, Sorghum or Sudan grouped for remote sensing only",NA
+"P","Pasture",1,"Alfalfa & alfalfa mixtures",NA
+"P","Pasture",2,"Clover",NA
+"P","Pasture",3,"Mixed pasture",NA
+"P","Pasture",4,"Native pasture",NA
+"P","Pasture",5,"Induced high water table native pasture",NA
+"P","Pasture",6,"Miscellaneous grasses",NA
+"P","Pasture",7,"Turf farms",NA
+"P","Pasture",8,"Bermuda grass",NA
+"P","Pasture",9,"Rye grass",NA
+"P","Pasture",10,"Klein grass",NA
+"T","Truck, nursery & berry crops",1,"Artichokes",NA
+"T","Truck, nursery & berry crops",2,"Asparagus",NA
+"T","Truck, nursery & berry crops",3,"Beans (green)",NA
+"T","Truck, nursery & berry crops",4,"Cole crops (mixture of 22-25)",NA
+"T","Truck, nursery & berry crops",6,"Carrots",NA
+"T","Truck, nursery & berry crops",7,"Celery",NA
+"T","Truck, nursery & berry crops",8,"Lettuce (all descriptions)",NA
+"T","Truck, nursery & berry crops",9,"Melons, squash, and cucumbers (all descriptions)",NA
+"T","Truck, nursery & berry crops",10,"Onions & garlic",NA
+"T","Truck, nursery & berry crops",11,"Peas",NA
+"T","Truck, nursery & berry crops",12,"Potatoes",NA
+"T","Truck, nursery & berry crops",13,"Sweet potatoes",NA
+"T","Truck, nursery & berry crops",14,"Spinach",NA
+"T","Truck, nursery & berry crops",15,"Tomatoes (processing)",NA
+"T","Truck, nursery & berry crops",16,"Flowers, nursery & Christmas tree farms",NA
+"T","Truck, nursery & berry crops",17,"Mixed (four or more)",NA
+"T","Truck, nursery & berry crops",18,"Miscellaneous truck",NA
+"T","Truck, nursery & berry crops",19,"Bush berries",NA
+"T","Truck, nursery & berry crops",20,"Strawberries",NA
+"T","Truck, nursery & berry crops",21,"Peppers (chili, bell, etc.)",NA
+"T","Truck, nursery & berry crops",22,"Broccoli",NA
+"T","Truck, nursery & berry crops",23,"Cabbage",NA
+"T","Truck, nursery & berry crops",24,"Cauliflower",NA
+"T","Truck, nursery & berry crops",25,"Brussels sprouts",NA
+"T","Truck, nursery & berry crops",26,"Tomatoes (market)",NA
+"T","Truck, nursery & berry crops",27,"Greenhouse",NA
+"T","Truck, nursery & berry crops",28,"Blueberries",NA
+"T","Truck, nursery & berry crops",29,"Asian leafy vegetables",NA
+"T","Truck, nursery & berry crops",30,"Lettuce or Leafy Greens grouped for remote sensing only",NA
+"T","Truck, nursery & berry crops",31,"Potato or Sweet potato grouped for remote sensing only",NA
+"D","Deciduous fruits and nuts",1,"Apples",NA
+"D","Deciduous fruits and nuts",2,"Apricots",NA
+"D","Deciduous fruits and nuts",3,"Cherries",NA
+"D","Deciduous fruits and nuts",5,"Peaches and nectarines",NA
+"D","Deciduous fruits and nuts",6,"Pears",NA
+"D","Deciduous fruits and nuts",7,"Plums",NA
+"D","Deciduous fruits and nuts",8,"Prunes",NA
+"D","Deciduous fruits and nuts",9,"Figs",NA
+"D","Deciduous fruits and nuts",10,"Miscellaneous deciduous",NA
+"D","Deciduous fruits and nuts",11,"Mixed deciduous",NA
+"D","Deciduous fruits and nuts",12,"Almonds",NA
+"D","Deciduous fruits and nuts",13,"Walnuts",NA
+"D","Deciduous fruits and nuts",14,"Pistachios",NA
+"D","Deciduous fruits and nuts",15,"Pomegranates",NA
+"D","Deciduous fruits and nuts",16,"Plums Prunes or Apricots grouped for remote sensing only",NA
+"C","Citrius and subtropical",1,"Grapefruit",NA
+"C","Citrius and subtropical",2,"Lemons",NA
+"C","Citrius and subtropical",3,"Oranges",NA
+"C","Citrius and subtropical",4,"Dates",NA
+"C","Citrius and subtropical",5,"Avocados",NA
+"C","Citrius and subtropical",6,"Olives",NA
+"C","Citrius and subtropical",7,"Miscellaneous subtropical fruit",NA
+"C","Citrius and subtropical",8,"Kiwis",NA
+"C","Citrius and subtropical",9,"Jojoba",NA
+"C","Citrius and subtropical",10,"Eucalyptus",NA
+"C","Citrius and subtropical",11,"Mixed subtropical fruits",NA
+"V","Vineyards",1,"Table grapes",NA
+"V","Vineyards",2,"Wine grapes",NA
+"V","Vineyards",3,"Raisin grapes",NA
+"YP",NA,NA,"no subclass",NA
+"I","Idle",1,"Land not cropped the current or previous crop season, but cropped within the past three years",NA
+"I","Idle",2,"new lands being prepared for crop production",NA
+"I","Idle",4,"long term, land consistently idle for four or more years",NA
+"X","Not cropped or unclassified",NA,"no subclass",NA
+"S","Semi-agricultural & incidental to agriculture",1,"Farmsteads (includes a farm residence)",NA
+"S","Semi-agricultural & incidental to agriculture",2,"Livestock feed lot operations",NA
+"S","Semi-agricultural & incidental to agriculture",3,"Dairies",NA
+"S","Semi-agricultural & incidental to agriculture",4,"Poultry farms",NA
+"S","Semi-agricultural & incidental to agriculture",5,"Farmsteads (without a farm residence)",NA
+"S","Semi-agricultural & incidental to agriculture",6," Miscellaneous semi-agricultural (small roads, ditches, non-planted areas of cropped fields)",NA
+"U","Urban",NA,"generic nomenclature with no subclass",NA
+"UR","Urban residential",1,"Single family dwellings with lot sizes greater than 1 acre up to 5 acres (ranchettes, etc.)",NA
+"UR","Urban residential",11,"Single family dwellings with lot sizes greater than 1 acre up to 5 acres (ranchettes, etc.)","0% to 25% area irrigated"
+"UR","Urban residential",12,"Single family dwellings with lot sizes greater than 1 acre up to 5 acres (ranchettes, etc.)","26% to 50% area irrigated"
+"UR","Urban residential",13,"Single family dwellings with lot sizes greater than 1 acre up to 5 acres (ranchettes, etc.)","51% to 75% area irrigated"
+"UR","Urban residential",14,"Single family dwellings with lot sizes greater than 1 acre up to 5 acres (ranchettes, etc.)","76% to 100% area irrigated"
+"UR","Urban residential",2,"Single family dwellings with a density of 1 unit/acre up to 8+ units per acre",NA
+"UR","Urban residential",21,"Single family dwellings with a density of 1 unit/acre up to 8+ units per acre","0% to 25% area irrigated"
+"UR","Urban residential",22,"Single family dwellings with a density of 1 unit/acre up to 8+ units per acre","26% to 50% area irrigated"
+"UR","Urban residential",23,"Single family dwellings with a density of 1 unit/acre up to 8+ units per acre","51% to 75% area irrigated"
+"UR","Urban residential",24,"Single family dwellings with a density of 1 unit/acre up to 8+ units per acre","76% to 100% area irrigated"
+"UR","Urban residential",3,"Multiple family (apartments, condominiums, townhouses, barracks, bungalows, duplexes, etc.)",NA
+"UR","Urban residential",31,"Multiple family (apartments, condominiums, townhouses, barracks, bungalows, duplexes, etc.)","0% to 25% area irrigated"
+"UR","Urban residential",32,"Multiple family (apartments, condominiums, townhouses, barracks, bungalows, duplexes, etc.)","26% to 50% area irrigated"
+"UR","Urban residential",33,"Multiple family (apartments, condominiums, townhouses, barracks, bungalows, duplexes, etc.)","51% to 75% area irrigated"
+"UR","Urban residential",34,"Multiple family (apartments, condominiums, townhouses, barracks, bungalows, duplexes, etc.)","76% to 100% area irrigated"
+"UR","Urban residential",4,"Trailer courts",NA
+"UR","Urban residential",41,"Trailer courts","0% to 25% area irrigated"
+"UR","Urban residential",42,"Trailer courts","26% to 50% area irrigated"
+"UR","Urban residential",43,"Trailer courts","51% to 75% area irrigated"
+"UR","Urban residential",44,"Trailer courts","76% to 100% area irrigated"
+"UC","Commercial",1,"Offices, retailers, etc.",NA
+"UC","Commercial",2,"Hotels",NA
+"UC","Commercial",3,"Motels",NA
+"UC","Commercial",4,"Recreation vehicle parking, camp sites",NA
+"UC","Commercial",5,"Institutions (hospitals, prisons, reformatories, asylums, etc., 
+      having a reasonably constant 24-hour resident population)",NA
+"UC","Commercial",6,"Schools (yards to be mapped separately if large enough)",NA
+"UC","Commercial",7,"Municipal auditoriums, theaters, churches, buildings and stands associated with race tracks, 
+      football stadiums, baseball parks, rodeo arenas, amusement parks, etc.",NA
+"UC","Commercial",8,"Miscellaneous highwater use (to be used to indicate a high water use condition not covered by the above categories.)",NA
+"UI","Industrial",1,"Manufacturing, assembling, and general processing",NA
+"UI","Industrial",2,"Extractive industries (oil fields, rock quarries, gravel pits, rock and gravel processing plants, etc.)",NA
+"UI","Industrial",3,"Storage and distribution (warehouses, substations, railroad marshalling yards, tank farms, etc.)",NA
+"UI","Industrial",6,"Saw mills",NA
+"UI","Industrial",7,"Oil refineries",NA
+"UI","Industrial",8,"Paper mills",NA
+"UI","Industrial",9,"Meat packing plants",NA
+"UI","Industrial",10,"Steel and aluminum mills",NA
+"UI","Industrial",11,"Fruit and vegetable canneries and general food processing",NA
+"UI","Industrial",12,"Miscellaneous highwater use (to be used to indicate a high water use condition not covered by other categories.)",NA
+"UI","Industrial",13,"Sewage treatment plant including ponds",NA
+"UI","Industrial",14,"Waste accumulation sites (public dumps, sewage sludge sites, landfill and hazardous waste sites, etc.)",NA
+"UI","Industrial",15,"Wind farms, solar collector farms, etc.",NA
+"UL",NA,1,"Lawn area – irrigated",NA
+"UL",NA,2,"Golf course – irrigated",NA
+"UL",NA,3,"Orsubclassntal landscape (excluding lawns) – irrigated",NA
+"UL",NA,4,"Cemeteries – irrigated",NA
+"UL",NA,5,"Cemeteries - not irrigated",NA
+"UV","Vacant",1,"Unpaved areas (vacant lots, graveled surfaces, play yards, developable open lands within urban areas, etc.)",NA
+"UV","Vacant",3,"Railroad right of way",NA
+"UV","Vacant",4,"Paved areas (parking lots, paved roads, oiled surfaces, flood control channels, tennis court areas, auto sales lots, etc.)",NA
+"UV","Vacant",6,"Airport runways",NA
+"UV","Vacant",7,"Land in urban area that is not developable",NA
+"NC","Native Class",NA,"generic nomenclature with no subclass",NA
+"NV","Native vegetation",1,"Grassland",NA
+"NV","Native vegetation",2,"Light brush",NA
+"NV","Native vegetation",3,"Medium brush",NA
+"NV","Native vegetation",4,"Heavy brush",NA
+"NV","Native vegetation",5,"Brush and timber",NA
+"NV","Native vegetation",6,"Forest",NA
+"NV","Native vegetation",7,"Oak woodland",NA
+"NR","Riparian vegatation",1,"Marsh lands, tules and sedges",NA
+"NR","Riparian vegatation",2,"Natural highwater table meadow",NA
+"NR","Riparian vegatation",3,"Trees, shrubs or other larger stream side or watercourse vegetation",NA
+"NR","Riparian vegatation",4,"Seasonal duck marsh, dry or only partially wet during summer",NA
+"NR","Riparian vegatation",5,"Permanent duck marsh, flooded during summer",NA
+"NW","Water Surface",1,"River or stream (natural fresh water channels)",NA
+"NW","Water Surface",2,"Water channel (all sizes
+- ditches and canals - delivering water for irrigation and urban use - e.g. State Water Project, Central
+Valley Project, water district canals, etc.)",NA
+"NW","Water Surface",3,"Water channel (all sizes - ditches and canals - for removing
+on-farm drainage water - surface runoff and subsurface drainage - e.g. Colusa drain, drainage ditches in
+Imperial)",NA
+"NW","Water Surface",4,"Freshwater lake, reservoir, or pond (all sizes, includes ponds for stock, recreation,
+groundwater recharge, managed wetlands, on-farm storage, etc.)",NA
+"NW","Water Surface",5,"Brackish and saline water (includes
+areas in estuaries, inland water bodies, the ocean, etc.)",NA
+"NW","Water Surface",6,"Wastewater pond (dairy, sewage, cannery,
+winery, etc.)",NA
+"NW","Water Surface",7,"Paved water conveyance channels within urban areas (mainly for flood control)",NA
+"NB","Barren and Wasteland",1,"Dry stream channels",NA
+"NB","Barren and Wasteland",2,"Mine tailings",NA
+"NB","Barren and Wasteland",3,"Barren land",NA
+"NB","Barren and Wasteland",4,"Salt flats",NA
+"NB","Barren and Wasteland",5,"Sand dunes",NA
+"E","Entry denied",NA,"no subclass",NA
+"Z","Outside of study area",NA,"no subclass",NA
