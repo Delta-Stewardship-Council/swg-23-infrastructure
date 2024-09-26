@@ -19,7 +19,7 @@ structure_value <- st_read("data-clean/shapefiles/nationalStructureInventory/nsi
 managed_wetlands <- st_read("data-clean/shapefiles/managedWetlands/managedWetlands.shp") %>% 
   st_transform('+proj=longlat +datum=WGS84')
 
-croplands <- st_read("data-clean/shapefiles/deltaCropland/deltaCropland.shp") %>% 
+croplands <- st_read("data-clean/shapefiles/deltaCropland/croplandsByType.shp") %>% 
   st_transform('+proj=longlat +datum=WGS84')
 
 soc_vul <- st_read("data-clean/shapefiles/leveeLSDayPopWeightSVI/leveeLSDayPopWeightSVI.shp") %>% 
@@ -135,8 +135,76 @@ leaflet() %>%
               "Habitat Type",
               "Croplands")) %>% 
   setView(lat=38.2, lng=-121.7, zoom=9)
-  
 
 
+
+
+
+
+## ------------
+
+cropland_pal <- colorFactor(
+  palette = rainbow,
+  domain  = croplands$type)
+
+## Plot for structure by bins
+
+leaflet() %>%
+  ## add tiles
+  addProviderTiles(providers$CartoDB.Positron, 
+                   group = "Grey background") %>%
+  ## Add all polygon layers
+  addPolygons(data = croplands,
+              group = "Croplands",
+              fillColor = ~cropland_pal(type),
+              # label = soc_vul_labs,
+              stroke = TRUE,
+              fillOpacity = 0.6, 
+              color = NA, # remove polygon border
+              weight=0.8, ) %>% # polygon border weight
+  addLegend(group = "Cropland",
+            pal = cropland_pal,
+            values = croplands$type,
+            opacity = 0.6,
+            title = "Cropland Type",
+            position = "bottomleft") %>%
+  setView(lat=38.2, lng=-121.7, zoom=9)
+
+
+## Structure value by bins ----
+range(structure_value$t__2024, na.rm = T)
+
+## structure color pallet
+bins <- c(0, 10^12, 10^13, 10^14, 10^15, 2*10^16, 3*10^16, 4*10^16, 7*10^16)
+structure_pal <- colorBin("YlOrRd", 
+                domain = structure_value$t__2024, 
+                bins = bins)
+
+## structue map ----
+leaflet() %>%
+  ## add tiles
+  addProviderTiles(providers$CartoDB.Positron, 
+                   group = "Grey background") %>%
+  ## Add all polygon layers
+  addPolygons(data = structure_value,
+              group = "Structure",
+              fillColor = ~structure_pal(t__2024),
+              # label = soc_vul_labs,
+              stroke = TRUE,
+              fillOpacity = 0.6, 
+              color = "black", # remove polygon border
+              weight=0.8, ) %>% # polygon border weight
+  addLegend(group = "Structure",
+            pal = structure_pal,
+            values = structure_value$t__2024,
+            opacity = 0.6,
+            title = "Structure Value",
+            position = "bottomleft") %>%
+  setView(lat=38.2, lng=-121.7, zoom=9)
+
+## NEED TO FIGURE OUT HOW TO GET THE VALLUES OF THE LEGEND INTO SCEINTIFIC NOTATION
+
+value_under_10 <- structure_value %>% 
+  filter(t__2024 < 10000000000000000)
 
 
