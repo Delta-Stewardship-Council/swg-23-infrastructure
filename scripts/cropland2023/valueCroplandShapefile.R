@@ -17,17 +17,26 @@ library(dplyr)
 
 # --- Read in the shapefile ---
 cropland <- st_read(file.path("data-clean", "shapefiles", "deltaCropland", "deltaCropland.shp"))
+
 # --- Read in the crosswalk ---
 crosswalkCropland <- read.csv(file.path("data-raw", "csvFiles", "landUseCropValuation.csv"), strip.white = T) %>% 
   # Use long duration here; this is for floods that lasts for more than 5 days,
   # which would be our scenario in which the area is flood in perpetuity
   transmute(Clss_Nm = Crop.Name, longDuration = `Loss.acre...Long.Duration`)
 
-# --- Join the two files ---
+# # --- Read in crop subclass from i15 ---
+# cropSubclass <- read.csv(file.path("data-raw", "csvFiles", "i15cropSubclass.csv"), strip.white = T) %>% 
+#   transmute(Clss_Nm = subclass,
+#             class)
+
+# --- Join the valuation to cropland ---
 croplandValued <- cropland %>%
   left_join(crosswalkCropland, by = "Clss_Nm") %>% 
   # Calculate valuation by simply multiplying. Already in $ per acre
-  mutate(cropValueDollars = cropAre * longDuration)
+  mutate(cropValueDollars = cropAre * longDuration) %>% 
+  # Adding total crop value per leveed area
+  group_by(LMA) %>% 
+  mutate(totalCropValue = sum(cropValueDollars, na.rm = T))
 
 # Check to see if all crop values are used
 allUsed <- cropland %>% 
@@ -38,6 +47,11 @@ allUsed <- cropland %>%
     else (unique(.[["Clss_Nm"]]))
   }
 # Returns 0 rows; all accounted for
+
+# # --- Join the crop subclass to cropland ---
+# croplandValuedSubclass <- croplandValued %>% 
+#   left_join(cropSubclass, by = "Clss_Nm")
+# There are too many discrepancies. Would have to manually resolve name differences
 
 # --- Writing the shapefile ---
 if (isTRUE(allUsed)) {
