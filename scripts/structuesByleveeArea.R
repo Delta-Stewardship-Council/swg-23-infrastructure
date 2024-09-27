@@ -55,7 +55,8 @@ plot(total_value_area["value_area"])
 total_value_polygon <- levee_areas %>% 
   left_join(total_value_area, by = "LMA") %>% 
   # Multiplying value to bring it account for inflation and bring it to 2024 dollar value
-  mutate(total_value_2024 = structure_value_area*1.14)
+  mutate(total_value_2024 = structure_value_area*1.14,
+         total_value_trill = total_value_2024/10^12)
 
 plot(total_value_polygon["structure_value_area"])
 
